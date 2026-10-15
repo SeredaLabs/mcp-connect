@@ -1,6 +1,8 @@
-# MCP Connect — інструкція
-
-🌐 [English](https://github.com/SeredaLabs/mcp-connect) · **Українська**
+<h1>
+  MCP Connect — інструкція
+  <a href="https://github.com/SeredaLabs/mcp-connect/blob/main/docs/INSTALL.uk.md"><img align="right" src="https://img.shields.io/badge/%F0%9F%87%BA%F0%9F%87%A6%20%D0%A3%D0%BA%D1%80%D0%B0%D1%97%D0%BD%D1%81%D1%8C%D0%BA%D0%B0-2563eb?style=flat-square" alt="🇺🇦 Українська" height="24"></a>
+  <a href="https://github.com/SeredaLabs/mcp-connect"><img align="right" src="https://img.shields.io/badge/%F0%9F%8C%90%20English-475569?style=flat-square" alt="🌐 English" height="24"></a>
+</h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
