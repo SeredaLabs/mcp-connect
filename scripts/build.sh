@@ -4,6 +4,13 @@ cd "$(dirname "$0")/.."
 GO=${GO:-go}
 platform=${GOOS:-$("$GO" env GOOS)}
 arch=${GOARCH:-$("$GO" env GOARCH)}
+# Match the documented minimum OS instead of inheriting the build host version.
+if [ "$platform" = darwin ]; then
+  export MACOSX_DEPLOYMENT_TARGET=13.0
+  export CGO_CFLAGS="${CGO_CFLAGS:--O2 -g} -mmacosx-version-min=13.0"
+  export CGO_CXXFLAGS="${CGO_CXXFLAGS:--O2 -g} -mmacosx-version-min=13.0"
+  export CGO_LDFLAGS="${CGO_LDFLAGS:--O2 -g} -mmacosx-version-min=13.0"
+fi
 # GLFW's bundled XInput declarations use the legacy WINBOOL alias.
 # Current Windows ARM64 MinGW/clang headers expose BOOL instead.
 if [ "$platform" = windows ] && [ "$arch" = arm64 ]; then
@@ -15,6 +22,11 @@ if [ "$platform" = darwin ]; then
   bundle="$out/MCP Connect.app"
   mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
   "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$bundle/Contents/MacOS/mcp-connect" ./cmd/mcp-connect
+  min_version=$(otool -l "$bundle/Contents/MacOS/mcp-connect" | awk '$1 == "minos" {print $2; exit}')
+  case "$min_version" in
+    13.0|13.0.0) ;;
+    *) echo "Unexpected macOS deployment target: $min_version (expected 13.0)" >&2; exit 1 ;;
+  esac
   cp assets/icon.icns "$bundle/Contents/Resources/icon.icns"
   cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,8 +35,8 @@ if [ "$platform" = darwin ]; then
 <key>CFBundleName</key><string>MCP Connect</string>
 <key>CFBundleDisplayName</key><string>MCP Connect</string>
 <key>CFBundleIdentifier</key><string>eu.onecmcp.connect</string>
-<key>CFBundleVersion</key><string>21</string>
-<key>CFBundleShortVersionString</key><string>0.4.3</string>
+<key>CFBundleVersion</key><string>22</string>
+<key>CFBundleShortVersionString</key><string>0.4.4</string>
 <key>CFBundleExecutable</key><string>mcp-connect</string>
 <key>CFBundleIconFile</key><string>icon.icns</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
