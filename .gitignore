@@ -32,3 +32,6 @@ __pycache__/
 *_test.go
 /tests/
 /audit/
+
+# Local-only development material and archives
+/.local/
