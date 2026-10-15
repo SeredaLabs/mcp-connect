@@ -1,10 +1,12 @@
-# Build MCP Connect
+# 🛠️ Build MCP Connect
 
 [← Overview](../README.md) · [🇺🇦 User guide](INSTALL.uk.md) · [Security](../SECURITY.md)
 
 Build a native desktop package with the dependencies pinned in `go.mod` and `go.sum`.
 
-## Requirements
+<a id="requirements"></a>
+
+## 📋 Requirements
 
 | Platform | Tools |
 |---|---|
@@ -21,7 +23,9 @@ For Ubuntu, install:
 sudo apt-get install build-essential libgl1-mesa-dev libegl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
 ```
 
-## Build
+<a id="build"></a>
+
+## 🛠️ Build
 
 ```sh
 bash scripts/build.sh

@@ -17,7 +17,9 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 **Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md)
 
-## See it in action
+<a id="see-it-in-action"></a>
+
+## 🎬 See it in action
 
 ![MCP Connect — connection profile, three authentication methods and AI client selection](assets/demo/mcp-connect-preview.gif)
 
@@ -25,14 +27,18 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 
 [▶ Watch or download the full MP4 demo](assets/demo/mcp-connect-demo.mp4)
 
-## Why MCP Connect?
+<a id="why-mcp-connect"></a>
+
+## ✨ Why MCP Connect?
 
 - **One compact window.** Connection profiles, authentication and client status in one place.
 - **Three authentication methods.** Login & password, Bearer token or API key.
 - **System credential storage.** macOS Keychain, Windows Credential Manager or Linux Secret Service.
 - **No background service.** The adapter runs on demand; the packaged utility needs no Go, Node or Python runtime.
 
-## Get connected
+<a id="get-connected"></a>
+
+## 🔌 Get connected
 
 1. Download the package for your OS and processor from [Releases](https://github.com/SeredaLabs/mcp-connect/releases).
 2. Extract it into a permanent location and open **MCP Connect**.
@@ -43,7 +49,9 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 
 **Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance.
 
-## Supported clients
+<a id="supported-clients"></a>
+
+## 🤖 Supported clients
 
 | Provider | Client | Connection |
 |---|---|---|
@@ -54,7 +62,9 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 
 Each client has its own OS support and availability. The ChatGPT integration needs a compatible bundled or installed Codex CLI. A local plugin does not automatically appear in ordinary browser or mobile chats.
 
-## Platforms
+<a id="platforms"></a>
+
+## 💻 Platforms
 
 | Platform | Processor | Package |
 |---|---|---|
@@ -64,7 +74,9 @@ Each client has its own OS support and availability. The ChatGPT integration nee
 
 A graphical session and OpenGL 2.1 compatible graphics drivers are required. Linux packages target Ubuntu 24.04 and need OpenGL/Wayland/X11 libraries, D-Bus and an unlocked Secret Service provider such as GNOME Keyring. Other distributions may need additional desktop libraries.
 
-## Understand the indicators
+<a id="understand-the-indicators"></a>
+
+## 🚦 Understand the indicators
 
 | Indicator | Meaning |
 |---|---|
@@ -75,7 +87,9 @@ A graphical session and OpenGL 2.1 compatible graphics drivers are required. Lin
 
 Indicators are not continuous monitoring. Restart clients to end existing adapter sessions after disconnecting.
 
-## Credentials and security
+<a id="credentials-and-security"></a>
+
+## 🔐 Credentials and security
 
 Passwords, tokens and API keys stay in your system vault. Client configuration contains only the adapter path and connection ID. There is no plaintext fallback.
 
@@ -83,13 +97,17 @@ Credentials are bound to the endpoint and authentication method. Changing either
 
 Use a separate server account with minimum permissions. MCP Connect does not change server permissions or restrict the tools your account can invoke. Report vulnerabilities privately through [Security → Report a vulnerability](https://github.com/SeredaLabs/mcp-connect/security/advisories/new).
 
-## Preview release
+<a id="preview-release"></a>
+
+## 🧪 Preview release
 
 The first public release is intended for developers and early testers. macOS packages are ad-hoc signed without Developer ID notarization; Windows packages have no publisher signature. OS publisher warnings may appear.
 
 Native builds and automated checks do not establish compatibility with every desktop environment or AI-client version. The Apple Silicon interface has been checked on a physical Mac; Linux on both architectures and Windows AMD64 have passed graphical startup checks (Windows used CI-only software OpenGL). Windows ARM64 is experimental: its adapter and credential store passed checks, but its graphical startup and a physical Intel Mac still need confirmation.
 
-## License and author
+<a id="license-and-author"></a>
+
+## 📄 License and author
 
 Application code is [MIT licensed](LICENSE). Dependency and font licenses are included in [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) and every package.
 

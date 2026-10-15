@@ -1,4 +1,4 @@
-# Security
+# 🛡️ Security
 
 Please report vulnerabilities privately through this repository's **Security → Report a vulnerability**. Do not include real credentials, business data, local profiles or private server addresses in public issues.
 

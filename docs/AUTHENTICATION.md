@@ -1,4 +1,4 @@
-# Authentication
+# 🔑 Authentication
 
 [← Overview](../README.md) · [🇺🇦 User guide](INSTALL.uk.md) · [Security](../SECURITY.md)
 
@@ -10,19 +10,25 @@ Choose the method supported by your MCP server. The utility does not enable auth
 | Bearer token | Hidden token without the `Bearer` prefix | `Authorization: Bearer …` |
 | API key | Header selection and hidden key | `X-API-Key`, `Api-Key` or `X-Auth-Token` |
 
-## Storage
+<a id="storage"></a>
+
+## 🔐 Storage
 
 Secrets are stored in macOS Keychain, Windows Credential Manager or Linux Secret Service. Profiles contain connection metadata, and client registration contains the adapter path and profile ID. Credentials are not copied into client configuration.
 
 An unavailable or locked vault causes an error; there is no plaintext fallback. The complete credential record, including its endpoint binding, is limited to **2560 bytes** for consistent Windows support. Very long tokens may not fit.
 
-## Editing a connection
+<a id="editing-a-connection"></a>
+
+## ✏️ Editing a connection
 
 Empty credential fields reuse a saved secret only when its endpoint, authentication method and API-key header match. Changing these requires re-entry. Older records without an endpoint binding must be explicitly re-entered and saved.
 
 On macOS, Keychain access depends on the executable and its signing identity. A new ad-hoc signed build may ask for permission again.
 
-## Tokens and permissions
+<a id="tokens-and-permissions"></a>
+
+## 🔑 Tokens and permissions
 
 Tokens and keys are entered manually. OAuth sign-in, automatic token renewal and arbitrary custom headers are not implemented.
 
