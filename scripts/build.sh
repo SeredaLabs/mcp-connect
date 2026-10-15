@@ -14,7 +14,7 @@ mkdir -p "$out"
 if [ "$platform" = darwin ]; then
   bundle="$out/MCP Connect.app"
   mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
-  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$bundle/Contents/MacOS/mcp-connect" ./cmd/1c-mcp-connect
+  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$bundle/Contents/MacOS/mcp-connect" ./cmd/mcp-connect
   cp assets/icon.icns "$bundle/Contents/Resources/icon.icns"
   cat > "$bundle/Contents/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -40,7 +40,7 @@ PLIST
 else
   suffix=""; if [ "$platform" = windows ]; then suffix=.exe; fi
   # Keep the Windows console subsystem: MCP stdio must remain usable.
-  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$out/mcp-connect$suffix" ./cmd/1c-mcp-connect
+  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$out/mcp-connect$suffix" ./cmd/mcp-connect
   if [ "$platform" = windows ]; then
     cp docs/INSTALL.uk.md "$out/README.uk.md"
     cp LICENSE "$out/LICENSE.txt"

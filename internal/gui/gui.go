@@ -13,7 +13,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"image/color"
 	"net/url"
-	"onecmcp/connect/internal/core"
+	"github.com/SeredaLabs/mcp-connect/internal/core"
 	"strings"
 	"time"
 )
