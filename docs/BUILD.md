@@ -36,3 +36,5 @@ bash scripts/build.sh
 Packages are written to `dist/`. They include the executable or application bundle, Ukrainian installation guide, application license and third-party notices.
 
 The [build workflow](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) compiles six native targets and checks dependency integrity, static analysis and known vulnerabilities. It is not a publisher-signing or notarization service.
+
+Windows packaging generates embedded icon resources with pinned `go-winres v0.3.3`. This build-only tool is downloaded by Go and is not included in the application.

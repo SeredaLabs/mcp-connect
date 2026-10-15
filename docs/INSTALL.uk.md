@@ -5,7 +5,7 @@
 </h1>
 
 [![Збирання](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Попередній випуск](https://img.shields.io/badge/release-0.4.4%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Попередній випуск](https://img.shields.io/badge/release-0.4.5%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Платформи](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#платформи)
 [![Ліцензія](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
 
@@ -47,6 +47,18 @@ MCP Connect — компактна настільна утиліта для пі
 - **Linux:** розпакуйте архів, надайте `mcp-connect` право виконання й запустіть у графічному сеансі.
 
 Відповідні AI-клієнти встановлюються окремо й мають власні вимоги до ОС та доступності. Для реєстрації Codex і Claude Code потрібен підтримуваний CLI.
+
+### 🖼️ Іконка й ярлик Linux
+
+У macOS іконка вбудована в `.app`, у Windows — в `.exe`. Для Linux пакунок містить `icon.png` і `mcp-connect.desktop`. Щоб додати програму до меню застосунків, виконайте з розпакованої папки:
+
+```sh
+install -Dm755 mcp-connect "$HOME/.local/bin/mcp-connect"
+install -Dm644 icon.png "$HOME/.local/share/icons/hicolor/512x512/apps/mcp-connect.png"
+install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.desktop"
+```
+
+Папка `~/.local/bin` має бути в `PATH` графічного сеансу. Встановіть ярлик **до** налаштування підключень, щоб клієнти зберегли постійний шлях до адаптера. Іконка звичайного Linux-виконуваного файла у файловому менеджері залежить від оточення; логотип відображається в ярлику та вікні програми.
 
 <a id="підключення"></a>
 
@@ -118,7 +130,7 @@ MCP Connect — компактна настільна утиліта для пі
 
 ## 🧪 Межі попереднього випуску
 
-Поточна версія **0.4.4 Preview** призначена для розробників і раннього тестування. У ній виправлено мінімальну версію macOS у пакуванні: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
+Поточна версія **0.4.5 Preview** призначена для розробників і раннього тестування. У ній виправлено мінімальну версію macOS у пакуванні: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
 
 Інтерфейс Apple Silicon перевірено на фізичному Mac із macOS 14.4.1. Графічний запуск перевірено для обох Linux-архітектур і Windows AMD64; у Windows використано програмний OpenGL лише в CI, він не входить до пакунка. **Windows ARM64 залишається експериментальним:** адаптер і сховище секретів пройшли перевірки, але графічний запуск не підтверджено. Також не підтверджено інтерфейс на фізичному Intel Mac та запуск на macOS 13.
 

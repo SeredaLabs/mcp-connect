@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.4%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.5%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -73,6 +73,18 @@ Each client has its own OS support and availability. The ChatGPT integration nee
 | Linux desktop | AMD64 / ARM64 | `.tar.gz` |
 
 A graphical session and OpenGL 2.1 compatible graphics drivers are required. Linux packages target Ubuntu 24.04 and need OpenGL/Wayland/X11 libraries, D-Bus and an unlocked Secret Service provider such as GNOME Keyring. Other distributions may need additional desktop libraries.
+
+### 🖼️ Application icons
+
+The logo is embedded in the macOS `.app` and Windows `.exe`. Linux packages include `icon.png` and a desktop launcher. From the extracted Linux folder, install them before configuring connections:
+
+```sh
+install -Dm755 mcp-connect "$HOME/.local/bin/mcp-connect"
+install -Dm644 icon.png "$HOME/.local/share/icons/hicolor/512x512/apps/mcp-connect.png"
+install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.desktop"
+```
+
+`~/.local/bin` must be on the desktop session's `PATH`. File managers may still use a generic icon for the standalone Linux executable; the launcher and application window use the logo.
 
 <a id="understand-the-indicators"></a>
 

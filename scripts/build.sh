@@ -18,6 +18,13 @@ if [ "$platform" = windows ] && [ "$arch" = arm64 ]; then
 fi
 out="dist/${platform}-${arch}"
 mkdir -p "$out"
+if [ "$platform" = windows ]; then
+  # Embed the Explorer icon without changing the MCP console/stdio behavior.
+  resource="cmd/mcp-connect/icon_windows_${arch}.syso"
+  trap 'rm -f "$resource"' EXIT
+  GOOS= GOARCH= "$GO" run github.com/tc-hib/go-winres@v0.3.3 simply \
+    --arch "$arch" --out cmd/mcp-connect/icon --manifest none --icon assets/icon.png
+fi
 if [ "$platform" = darwin ]; then
   bundle="$out/MCP Connect.app"
   mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
@@ -35,8 +42,8 @@ if [ "$platform" = darwin ]; then
 <key>CFBundleName</key><string>MCP Connect</string>
 <key>CFBundleDisplayName</key><string>MCP Connect</string>
 <key>CFBundleIdentifier</key><string>eu.onecmcp.connect</string>
-<key>CFBundleVersion</key><string>22</string>
-<key>CFBundleShortVersionString</key><string>0.4.4</string>
+<key>CFBundleVersion</key><string>23</string>
+<key>CFBundleShortVersionString</key><string>0.4.5</string>
 <key>CFBundleExecutable</key><string>mcp-connect</string>
 <key>CFBundleIconFile</key><string>icon.icns</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>
@@ -69,6 +76,8 @@ else
     cp docs/INSTALL.uk.md "$out/README.uk.md"
     cp LICENSE "$out/LICENSE.txt"
     cp THIRD_PARTY_NOTICES.txt "$out/THIRD_PARTY_NOTICES.txt"
-    tar -czf "dist/mcp-connect-${platform}-${arch}.tar.gz" -C "$out" mcp-connect README.uk.md LICENSE.txt THIRD_PARTY_NOTICES.txt
+    cp assets/icon.png "$out/icon.png"
+    cp assets/mcp-connect.desktop "$out/mcp-connect.desktop"
+    tar -czf "dist/mcp-connect-${platform}-${arch}.tar.gz" -C "$out" mcp-connect README.uk.md LICENSE.txt THIRD_PARTY_NOTICES.txt icon.png mcp-connect.desktop
   fi
 fi

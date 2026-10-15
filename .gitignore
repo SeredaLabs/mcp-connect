@@ -35,3 +35,6 @@ __pycache__/
 
 # Local-only development material and archives
 /.local/
+
+# Generated Windows icon resources
+*.syso
