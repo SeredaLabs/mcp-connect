@@ -1,6 +1,13 @@
-# MCP Connect
+# MCP Connect — інструкція
 
-Made & designed by [SeredaLabs](https://github.com/SeredaLabs).
+[![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
+[![License](https://img.shields.io/badge/license-MIT-purple)](../LICENSE)
+
+**🔌 Підключайте свої MCP-сервери до AI-програм з одного компактного вікна.**
+
+Введіть адресу сервера й власні облікові дані, виберіть програми та підключіться. Секрети зберігаються у захищеному сховищі вашої ОС.
+
+[English](../README.md) · [📦 Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [🔑 Авторизація](AUTHENTICATION.md) · [🛡️ Безпека](../SECURITY.md)
 
 ## Встановлення
 
@@ -41,3 +48,7 @@ ChatGPT Desktop використовує локальний плагін у ча
 macOS-збірки мають локальний ad-hoc підпис; Developer ID та notarization відсутні. Windows-збірки не мають підпису видавця. ОС може показати попередження про невідомого видавця. Тести в CI не замінюють перевірку всіх desktop-оточень і версій сторонніх AI-клієнтів.
 
 Для інших користувачів використовуйте окремі облікові записи з мінімальними правами. Утиліта не обмежує набір інструментів сервера й не змінює його права доступу. Не публікуйте облікові дані, локальні профілі чи бізнес-дані в GitHub Issues.
+
+---
+
+Made & designed by **[SeredaLabs](https://github.com/SeredaLabs)**.
