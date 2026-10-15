@@ -1,5 +1,7 @@
 # 🔑 Authentication
 
+🌐 **English** · [Українська](AUTHENTICATION.uk.md)
+
 [← Overview](../README.md) · [🇺🇦 User guide](INSTALL.uk.md) · [Security](../SECURITY.md)
 
 Choose the method supported by your MCP server. The utility does not enable authentication methods on the server itself.

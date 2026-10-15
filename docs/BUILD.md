@@ -1,5 +1,7 @@
 # 🛠️ Build MCP Connect
 
+🌐 **English** · [Українська](BUILD.uk.md)
+
 [← Overview](../README.md) · [🇺🇦 User guide](INSTALL.uk.md) · [Security](../SECURITY.md)
 
 Build a native desktop package with the dependencies pinned in `go.mod` and `go.sum`.

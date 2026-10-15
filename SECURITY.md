@@ -1,5 +1,7 @@
 # 🛡️ Security
 
+🌐 **English** · [Українська](docs/SECURITY.uk.md)
+
 Please report vulnerabilities privately through this repository's **Security → Report a vulnerability**. Do not include real credentials, business data, local profiles or private server addresses in public issues.
 
 MCP Connect stores credentials in the operating system's secure store. Metadata and client registration contain no password, token or API key. Secrets are bound to the exact endpoint and authentication method. Old unbound records require explicit re-entry before use. Unsupported or locked secret stores fail without a plaintext fallback.
