@@ -1,4 +1,4 @@
-module onecmcp/connect
+module github.com/SeredaLabs/mcp-connect
 
 go 1.27.2
 
