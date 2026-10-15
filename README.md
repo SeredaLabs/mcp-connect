@@ -17,9 +17,11 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 ## See it in action
 
-[![MCP Connect interface walkthrough — credential fields obscured](assets/demo/mcp-connect-preview.gif)](assets/demo/mcp-connect-demo.mp4)
+![MCP Connect — connection profile, three authentication methods and AI client selection](assets/demo/mcp-connect-preview.gif)
 
-[▶ Watch the 23-second MP4 demo](assets/demo/mcp-connect-demo.mp4). Demonstration data only; the server address and credential fields are blurred. This walkthrough shows the interface without connecting to a live server.
+Connection profiles → login & password / Bearer token / API key → AI client selection. The GIF loops automatically; server addresses and credential fields are blurred. Demonstration data only, without a live server connection.
+
+[▶ Watch or download the full MP4 demo](assets/demo/mcp-connect-demo.mp4)
 
 ## Why MCP Connect?
 
