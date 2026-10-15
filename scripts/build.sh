@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/.."
+GO=${GO:-go}
+platform=${GOOS:-$("$GO" env GOOS)}
+arch=${GOARCH:-$("$GO" env GOARCH)}
+# GLFW's bundled XInput declarations use the legacy WINBOOL alias.
+# Current Windows ARM64 MinGW/clang headers expose BOOL instead.
+if [ "$platform" = windows ] && [ "$arch" = arm64 ]; then
+  export CGO_CFLAGS="${CGO_CFLAGS:-} -DWINBOOL=BOOL"
+fi
+out="dist/${platform}-${arch}"
+mkdir -p "$out"
+if [ "$platform" = darwin ]; then
+  bundle="$out/MCP Connect.app"
+  mkdir -p "$bundle/Contents/MacOS" "$bundle/Contents/Resources"
+  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$bundle/Contents/MacOS/mcp-connect" ./cmd/1c-mcp-connect
+  cp assets/icon.icns "$bundle/Contents/Resources/icon.icns"
+  cat > "$bundle/Contents/Info.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleName</key><string>MCP Connect</string>
+<key>CFBundleDisplayName</key><string>MCP Connect</string>
+<key>CFBundleIdentifier</key><string>eu.onecmcp.connect</string>
+<key>CFBundleVersion</key><string>21</string>
+<key>CFBundleShortVersionString</key><string>0.4.3</string>
+<key>CFBundleExecutable</key><string>mcp-connect</string>
+<key>CFBundleIconFile</key><string>icon.icns</string>
+<key>LSMinimumSystemVersion</key><string>13.0</string>
+<key>NSHighResolutionCapable</key><true/>
+<key>NSPrincipalClass</key><string>NSApplication</string>
+</dict></plist>
+PLIST
+  cp LICENSE "$bundle/Contents/Resources/LICENSE.txt"
+  cp docs/INSTALL.uk.md "$bundle/Contents/Resources/README.uk.md"
+  codesign --force --deep --sign - "$bundle"
+  ditto -c -k --sequesterRsrc --keepParent "$bundle" "dist/mcp-connect-${platform}-${arch}.zip"
+else
+  suffix=""; if [ "$platform" = windows ]; then suffix=.exe; fi
+  # Keep the Windows console subsystem: MCP stdio must remain usable.
+  "$GO" build -trimpath -buildvcs=false -ldflags='-s -w' -o "$out/mcp-connect$suffix" ./cmd/1c-mcp-connect
+  if [ "$platform" = windows ]; then
+    cp docs/INSTALL.uk.md "$out/README.uk.md"
+    cp LICENSE "$out/LICENSE.txt"
+    if command -v 7z >/dev/null 2>&1; then
+      (cd "$out" && 7z a -tzip "../mcp-connect-${platform}-${arch}.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt")
+    elif command -v zip >/dev/null 2>&1; then
+      (cd "$out" && zip -q "../mcp-connect-${platform}-${arch}.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt")
+    else
+      echo "ZIP packager missing: install 7-Zip or zip" >&2
+      exit 1
+    fi
+  else
+    cp docs/INSTALL.uk.md "$out/README.uk.md"
+    cp LICENSE "$out/LICENSE.txt"
+    tar -czf "dist/mcp-connect-${platform}-${arch}.tar.gz" -C "$out" mcp-connect README.uk.md LICENSE.txt
+  fi
+fi

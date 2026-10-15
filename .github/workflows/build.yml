@@ -1,0 +1,92 @@
+name: Build desktop packages
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            os: darwin
+            arch: arm64
+          - runner: macos-15-intel
+            os: darwin
+            arch: amd64
+          - runner: ubuntu-24.04
+            os: linux
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            os: linux
+            arch: arm64
+          - runner: windows-2025
+            os: windows
+            arch: amd64
+          - runner: windows-11-arm
+            os: windows
+            arch: arm64
+    timeout-minutes: 30
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Linux GUI dependencies
+        if: matrix.os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev
+      - name: Windows C compiler
+        if: matrix.os == 'windows'
+        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        with:
+          msystem: ${{ matrix.arch == 'arm64' && 'CLANGARM64' || 'UCRT64' }}
+          install: ${{ matrix.arch == 'arm64' && 'mingw-w64-clang-aarch64-clang' || 'mingw-w64-ucrt-x86_64-gcc' }}
+          path-type: inherit
+      - name: Windows compiler path
+        if: matrix.os == 'windows'
+        shell: bash
+        run: |
+          if [ '${{ matrix.arch }}' = arm64 ]; then
+            echo 'C:\msys64\clangarm64\bin' >> "$GITHUB_PATH"
+            echo 'CC=clang' >> "$GITHUB_ENV"
+            echo 'CGO_CFLAGS=-DWINBOOL=BOOL' >> "$GITHUB_ENV"
+          else
+            echo 'C:\msys64\ucrt64\bin' >> "$GITHUB_PATH"
+            echo 'CC=gcc' >> "$GITHUB_ENV"
+          fi
+      - name: Dependency integrity and static checks
+        shell: bash
+        run: |
+          go mod verify
+          go vet ./...
+      - name: Known dependency vulnerabilities
+        shell: bash
+        env:
+          CGO_ENABLED: '1'
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - name: Build and package
+        shell: bash
+        env:
+          CGO_ENABLED: '1'
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+        run: ./scripts/build.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mcp-connect-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 1

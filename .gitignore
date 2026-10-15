@@ -1,0 +1,34 @@
+/dist/
+*.test
+.DS_Store
+
+# Local credentials, profiles, signing material and generated outputs
+.env
+.env.*
+!.env.example
+connections.json
+claude_desktop_config.json
+.mcp.json
+*.key
+*.pem
+*.p12
+*.pfx
+*.mobileprovision
+*.keychain*
+*.log
+*.zip
+*.git.bundle
+/work/
+/outputs/
+/coverage*
+
+# Local AI-client state and private validation material
+.codex/
+.claude/
+.agents/
+auth.json
+__pycache__/
+*.pyc
+*_test.go
+/tests/
+/audit/
