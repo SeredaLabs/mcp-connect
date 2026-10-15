@@ -1,13 +1,13 @@
 # MCP Connect — інструкція
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![License](https://img.shields.io/badge/license-MIT-purple)](../LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
 
 **🔌 Підключайте свої MCP-сервери до AI-програм з одного компактного вікна.**
 
 Введіть адресу сервера й власні облікові дані, виберіть програми та підключіться. Секрети зберігаються у захищеному сховищі вашої ОС.
 
-[English](../README.md) · [📦 Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [🔑 Авторизація](AUTHENTICATION.md) · [🛡️ Безпека](../SECURITY.md)
+[English](https://github.com/SeredaLabs/mcp-connect) · [📦 Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [🔑 Авторизація](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/AUTHENTICATION.md) · [🛡️ Безпека](https://github.com/SeredaLabs/mcp-connect/blob/main/SECURITY.md)
 
 ## Встановлення
 
