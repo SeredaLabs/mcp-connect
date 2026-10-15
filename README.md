@@ -48,7 +48,7 @@ Each client has its own OS support and availability. The ChatGPT integration nee
 | Windows | AMD64 / ARM64 | `.exe` in ZIP |
 | Linux desktop | AMD64 / ARM64 | `.tar.gz` |
 
-A graphical session and compatible graphics drivers are required. Linux packages target Ubuntu 24.04 and need OpenGL/Wayland/X11 libraries, D-Bus and an unlocked Secret Service provider such as GNOME Keyring. Other distributions may need additional desktop libraries.
+A graphical session and OpenGL 2.1 compatible graphics drivers are required. Linux packages target Ubuntu 24.04 and need OpenGL/Wayland/X11 libraries, D-Bus and an unlocked Secret Service provider such as GNOME Keyring. Other distributions may need additional desktop libraries.
 
 ## Understand the indicators
 
@@ -73,7 +73,7 @@ Use a separate server account with minimum permissions. MCP Connect does not cha
 
 The first public release is intended for developers and early testers. macOS packages are ad-hoc signed without Developer ID notarization; Windows packages have no publisher signature. OS publisher warnings may appear.
 
-Native builds and automated checks do not establish compatibility with every desktop environment or AI-client version. Graphical startup on Windows and physical Intel Macs still needs confirmation; the Apple Silicon interface has been checked on a physical Mac.
+Native builds and automated checks do not establish compatibility with every desktop environment or AI-client version. The Apple Silicon interface has been checked on a physical Mac; Linux on both architectures and Windows AMD64 have passed graphical startup checks (Windows used CI-only software OpenGL). Windows ARM64 is experimental: its adapter and credential store passed checks, but its graphical startup and a physical Intel Mac still need confirmation.
 
 ## License and author
 
