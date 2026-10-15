@@ -1,5 +1,7 @@
 # MCP Connect — інструкція
 
+🌐 [English](https://github.com/SeredaLabs/mcp-connect) · **Українська**
+
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
 
@@ -7,7 +9,9 @@
 
 Введіть адресу сервера й власні облікові дані, виберіть програми та підключіться. Секрети зберігаються у захищеному сховищі вашої ОС.
 
-[English](https://github.com/SeredaLabs/mcp-connect) · [📦 Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [🔑 Авторизація](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/AUTHENTICATION.md) · [🛡️ Безпека](https://github.com/SeredaLabs/mcp-connect/blob/main/SECURITY.md)
+**Користувачам:** [Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [Підключення](#підключення) · [Авторизація](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/AUTHENTICATION.md)
+
+**Про проєкт:** [Безпека](https://github.com/SeredaLabs/mcp-connect/blob/main/SECURITY.md) · [Збирання з коду](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/BUILD.md)
 
 ## Встановлення
 
