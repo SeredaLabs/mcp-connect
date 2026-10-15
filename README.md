@@ -50,4 +50,4 @@ Run `./scripts/build.sh` (or `bash scripts/build.sh` on Windows). Packages are w
 
 The initial public release is a **preview for developers and early testers**. macOS packages are ad-hoc signed, without Developer ID notarization. Windows packages have no publisher signature. OS publisher warnings may appear. Native automated verification does not establish compatibility with every desktop environment, OS version or AI-client release.
 
-Use a separate server account with minimum permissions. This utility does not change server permissions or filter tools. MIT licensed; see [LICENSE](LICENSE).
+Use a separate server account with minimum permissions. This utility does not change server permissions or filter tools. Application code is MIT licensed; see [LICENSE](LICENSE). Dependency and font licenses are included in [THIRD_PARTY_NOTICES.txt](THIRD_PARTY_NOTICES.txt) and every package.
