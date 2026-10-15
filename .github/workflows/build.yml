@@ -8,7 +8,7 @@ permissions:
   contents: read
 concurrency:
   group: build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   native:
     strategy:
@@ -47,6 +47,7 @@ jobs:
         if: matrix.os == 'linux'
         run: sudo apt-get update && sudo apt-get install -y libgl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols libegl1-mesa-dev
       - name: Windows C compiler
+        id: msys2
         if: matrix.os == 'windows'
         uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
         with:
@@ -57,14 +58,18 @@ jobs:
         if: matrix.os == 'windows'
         shell: bash
         run: |
+          toolchain_root=$(cygpath -m '${{ steps.msys2.outputs.msys2-location }}')
           if [ '${{ matrix.arch }}' = arm64 ]; then
-            echo 'C:\msys64\clangarm64\bin' >> "$GITHUB_PATH"
-            echo 'CC=clang' >> "$GITHUB_ENV"
+            toolchain_bin="$toolchain_root/clangarm64/bin"
+            echo "CC=$toolchain_bin/clang.exe" >> "$GITHUB_ENV"
             echo 'CGO_CFLAGS=-DWINBOOL=BOOL' >> "$GITHUB_ENV"
           else
-            echo 'C:\msys64\ucrt64\bin' >> "$GITHUB_PATH"
-            echo 'CC=gcc' >> "$GITHUB_ENV"
+            toolchain_bin="$toolchain_root/ucrt64/bin"
+            echo "CC=$toolchain_bin/gcc.exe" >> "$GITHUB_ENV"
           fi
+          echo "$toolchain_bin" >> "$GITHUB_PATH"
+          test -f "$toolchain_bin/${{ matrix.arch == 'arm64' && 'clang' || 'gcc' }}.exe"
+          "$toolchain_bin/${{ matrix.arch == 'arm64' && 'clang' || 'gcc' }}.exe" --version
       - name: Dependency integrity and static checks
         shell: bash
         run: |

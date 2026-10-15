@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=MCP Connect
+Comment=Connect AI clients to your MCP servers
+Comment[uk]=Підключення AI-клієнтів до ваших MCP-серверів
+Exec=mcp-connect
+Icon=mcp-connect
+Terminal=false
+Categories=Development;Utility;
+StartupNotify=true

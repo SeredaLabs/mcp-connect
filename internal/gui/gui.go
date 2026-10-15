@@ -11,15 +11,18 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/SeredaLabs/mcp-connect/assets"
+	"github.com/SeredaLabs/mcp-connect/internal/core"
 	"image/color"
 	"net/url"
-	"onecmcp/connect/internal/core"
 	"strings"
 	"time"
 )
 
 func Run(store *core.Store) error {
 	a := app.NewWithID("eu.onecmcp.connect")
+	brandIcon := fyne.NewStaticResource("mcp-connect.png", assets.Icon)
+	a.SetIcon(brandIcon)
 	a.Settings().SetTheme(&connectTheme{})
 	w := a.NewWindow("MCP Connect")
 	w.Resize(fyne.NewSize(1020, 680))
@@ -652,7 +655,11 @@ func Run(store *core.Store) error {
 	brand := canvas.NewText("MCP Connect", ink)
 	brand.TextSize = 20
 	brand.TextStyle.Bold = true
-	sidebarTop := container.NewVBox(brand, spacer(10), widget.NewLabelWithStyle("CONNECTIONS", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}))
+	logo := canvas.NewImageFromResource(brandIcon)
+	logo.FillMode = canvas.ImageFillContain
+	logo.SetMinSize(fyne.NewSize(28, 28))
+	brandRow := container.NewHBox(logo, brand)
+	sidebarTop := container.NewVBox(brandRow, spacer(10), widget.NewLabelWithStyle("CONNECTIONS", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}))
 	versionNote := canvas.NewText("MCP Connect · v"+core.Version, neutralTone)
 	versionNote.TextSize = 11
 	signature := canvas.NewText("Made & designed by", neutralTone)
