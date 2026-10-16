@@ -87,8 +87,14 @@ func Run(store *core.Store) error {
 	details.Truncation = fyne.TextTruncateEllipsis
 	details.Hide()
 	var fullDetails string
+	var verified *core.ProbeResult
+	var checkedAt time.Time
+	var verificationNote string
 	setDetails := func(text string) {
 		fullDetails = text
+		verified = nil
+		checkedAt = time.Time{}
+		verificationNote = ""
 		details.SetText(strings.Join(strings.Fields(text), " "))
 		if text == "" {
 			details.Hide()
@@ -351,6 +357,7 @@ func Run(store *core.Store) error {
 	work := func(kind string, job func() (string, string, error), after func()) {
 		id, url := selected, endpoint.Text
 		setBusy(true)
+		setDetails("")
 		status.SetText("Working…")
 		feedbackLamp.Set("In progress", amberTone)
 		if kind == "test" || kind == "connect" {
@@ -384,7 +391,6 @@ func Run(store *core.Store) error {
 					tone, label := blueTone, "Updated"
 					if kind == "test" || kind == "connect" {
 						tone, label = greenTone, "Verified"
-						d += "\nLast checked: " + time.Now().Format("02 Jan 2006, 15:04") + ". This is a check result, not live monitoring."
 					}
 					if kind == "disconnect" || kind == "delete" {
 						tone, label = neutralTone, "Disabled"
@@ -408,6 +414,7 @@ func Run(store *core.Store) error {
 			dialog.ShowError(e, w)
 			return
 		}
+		var result core.ProbeResult
 		work("test", func() (string, string, error) {
 			var err error
 			cred, err = resolveCredentials(c, cred)
@@ -420,8 +427,12 @@ func Run(store *core.Store) error {
 			if e != nil {
 				return "", "", e
 			}
+			result = r
 			return fmt.Sprintf("Authorization OK · MCP %s · %d tools", r.Protocol, len(r.Tools)), r.Server + "\n" + strings.Join(r.Tools, " · "), nil
-		}, nil)
+		}, func() {
+			verified = &result
+			checkedAt = time.Now()
+		})
 	})
 	save := widget.NewButtonWithIcon("Save & Connect", connectIcon, func() {
 		c, cred, e := snapshot()
@@ -437,6 +448,7 @@ func Run(store *core.Store) error {
 			return
 		}
 		selected = c.ID
+		var result core.ProbeResult
 		work("connect", func() (string, string, error) {
 			var err error
 			cred, err = resolveCredentials(c, cred)
@@ -445,9 +457,11 @@ func Run(store *core.Store) error {
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 			defer cancel()
-			if _, e := core.Probe(ctx, c.URL, cred); e != nil {
+			r, e := core.Probe(ctx, c.URL, cred)
+			if e != nil {
 				return "", "", e
 			}
+			result = r
 			if e := store.Save(c, cred); e != nil {
 				return "", "", e
 			}
@@ -460,6 +474,9 @@ func Run(store *core.Store) error {
 			}
 			return "Configured · restart your clients", message, nil
 		}, func() {
+			verified = &result
+			checkedAt = time.Now()
+			verificationNote = fullDetails
 			loading = true
 			password.SetText("")
 			loading = false
@@ -639,10 +656,13 @@ func Run(store *core.Store) error {
 	connectionHelp.Importance = widget.LowImportance
 	clientsCard := container.NewVBox(container.NewBorder(nil, nil, clientsTitle, connectionHelp), clients)
 	viewDetails := widget.NewButton("Details", func() {
-		text := widget.NewLabel(status.Text + "\n\n" + fullDetails)
-		text.Wrapping = fyne.TextWrapWord
-		popup := dialog.NewCustom("Connection details", "Close", container.NewVScroll(text), w)
-		popup.Resize(fyne.NewSize(680, 360))
+		detail := fullDetails
+		if verified != nil {
+			detail = verificationNote
+		}
+		content := connectionDetailsContent(status.Text, detail, verified, checkedAt)
+		popup := dialog.NewCustom("Connection details", "Close", content, w)
+		popup.Resize(fyne.NewSize(620, 500))
 		popup.Show()
 	})
 	viewDetails.Importance = widget.LowImportance
