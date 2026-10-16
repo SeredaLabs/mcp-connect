@@ -61,7 +61,7 @@ func run() error {
 			return e
 		}
 		if cred.Endpoint == "" {
-			return fmt.Errorf("Legacy credentials are not bound to a server; enter them again and use Save & Connect")
+			return fmt.Errorf("Legacy credentials are not bound to a server; enter them again and use Save & Apply")
 		}
 		if e := core.ValidateCredentials(c, cred); e != nil {
 			return e

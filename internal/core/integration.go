@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/pelletier/go-toml/v2"
 	"os"
 	"os/exec"
@@ -16,6 +17,7 @@ import (
 type Registration struct {
 	Command string   `json:"command" toml:"command"`
 	Args    []string `json:"args" toml:"args"`
+	Enabled *bool    `json:"enabled,omitempty" toml:"enabled,omitempty"`
 }
 type Integrator struct {
 	DisplayName       string
@@ -204,7 +206,7 @@ func (i *Integrator) Status(client, id string) string {
 		if info, err := os.Stat(r.Command); err == nil && !info.IsDir() {
 			return "Configured · saved adapter"
 		}
-		return "App moved — Save & Connect to repair"
+		return "App moved — Save & Apply to repair"
 	}
 	if FindClient(client) == "" {
 		if client == "claude-desktop" {
@@ -234,7 +236,7 @@ func (i *Integrator) Set(ctx context.Context, client, id string, on bool) error 
 	if client == "claude-desktop" && !on {
 		return i.setDesktop(id, false)
 	}
-	if on && exists && old.Command == i.Executable {
+	if on && exists && old.Command == i.Executable && (old.Enabled == nil || *old.Enabled) {
 		return nil
 	}
 	find := i.Find
@@ -296,7 +298,7 @@ func (i *Integrator) Set(ctx context.Context, client, id string, on bool) error 
 	if e != nil {
 		return e
 	}
-	if on && (!exists || !owned(r, id) || !samePath(r.Command, i.Executable)) {
+	if on && (!exists || !owned(r, id) || !samePath(r.Command, i.Executable) || (r.Enabled != nil && !*r.Enabled)) {
 		return errors.New(client + " registration verification failed")
 	}
 	if !on && exists {
@@ -305,44 +307,42 @@ func (i *Integrator) Set(ctx context.Context, client, id string, on bool) error 
 	return nil
 }
 func (i *Integrator) Sync(ctx context.Context, c Connection) error {
-	copyIntegrator := *i
-	copyIntegrator.DisplayName = c.Name
-	var errs []string
-	pluginErr := copyIntegrator.Set(ctx, "chatgpt", c.ID, c.Enabled && c.ChatGPT)
-	if pluginErr != nil {
-		errs = append(errs, pluginErr.Error())
+	return i.Apply(ctx, c).Err()
+}
+func (s *Store) Disable(ctx context.Context, i *Integrator, c Connection) error {
+	report, err := s.DisableClients(ctx, i, c)
+	if err != nil {
+		return err
 	}
-	for _, p := range []struct {
-		name string
-		on   bool
-	}{{"claude", c.Enabled && c.Claude}, {"codex", c.Enabled && c.Codex && !c.ChatGPT}, {"claude-desktop", c.Enabled && c.ClaudeDesktop}} {
-		if p.name == "codex" && pluginErr != nil {
-			continue
-		}
-		if e := copyIntegrator.Set(ctx, p.name, c.ID, p.on); e != nil {
-			errs = append(errs, e.Error())
-		}
-	}
-	if len(errs) > 0 {
-		return errors.New(strings.Join(errs, "\n"))
+	if err := report.Err(); err != nil {
+		return fmt.Errorf("Profile disabled. Some client entries could not be removed; retry Disconnect. Existing sessions must be closed.\n%w", err)
 	}
 	return nil
 }
-func (s *Store) Disable(ctx context.Context, i *Integrator, c Connection) error {
-	c.Enabled = false
-	if e := i.Sync(ctx, c); e != nil {
-		return e
-	}
+
+// DisableClients persists the disabled profile before attempting any cleanup.
+// The report distinguishes cleanup failures from a failed local save.
+func (s *Store) DisableClients(ctx context.Context, i *Integrator, c Connection) (ApplyReport, error) {
 	cs, e := s.Load()
 	if e != nil {
-		return e
+		return nil, e
 	}
+	found := false
 	for n := range cs {
 		if cs[n].ID == c.ID {
+			c = cs[n]
+			c.Enabled = false
 			cs[n] = c
+			found = true
 		}
 	}
-	return s.Write(cs)
+	if !found {
+		return nil, errors.New("Connection not found")
+	}
+	if e := s.Write(cs); e != nil {
+		return nil, e
+	}
+	return i.Apply(ctx, c), nil
 }
 
 // Finder launches GUI applications with a minimal PATH. npm client launchers

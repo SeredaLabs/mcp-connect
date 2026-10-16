@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const Version = "0.4.11"
+const Version = "0.4.12"
 const Service = "eu.onecmcp.connect"
 
 type Credentials struct {
@@ -222,6 +222,29 @@ func (s *Store) Remove(id string) error {
 	return s.Write(out)
 }
 
+// SaveSettings updates local choices without touching the vault or server.
+// Endpoint and authentication changes must go through Save instead.
+func (s *Store) SaveSettings(c Connection) error {
+	if err := Validate(c); err != nil {
+		return err
+	}
+	cs, err := s.Load()
+	if err != nil {
+		return err
+	}
+	for n, old := range cs {
+		if old.ID != c.ID {
+			continue
+		}
+		if old.URL != c.URL || !sameAuth(old.AuthType, old.AuthHeader, c.AuthType, c.AuthHeader) {
+			return errors.New("Server or authentication changed; save credentials first")
+		}
+		cs[n] = c
+		return s.Write(cs)
+	}
+	return errors.New("Connection not found")
+}
+
 // ResolveCredentials refuses to reuse a saved secret for a changed endpoint.
 // Legacy records must be explicitly re-entered before gaining endpoint binding.
 func (s *Store) ResolveCredentials(c Connection, input Credentials) (Credentials, error) {
@@ -251,7 +274,7 @@ func (s *Store) ResolveCredentials(c Connection, input Credentials) (Credentials
 			return Credentials{}, err
 		}
 		if old.Endpoint == "" {
-			return Credentials{}, errors.New("Legacy credentials are not bound to a server; enter them again and use Save & Connect")
+			return Credentials{}, errors.New("Legacy credentials are not bound to a server; enter them again and use Save & Apply")
 		}
 		if err := ValidateCredentials(c, old); err != nil {
 			return Credentials{}, err

@@ -4,6 +4,8 @@ cd "$(dirname "$0")/.."
 GO=${GO:-go}
 platform=${GOOS:-$("$GO" env GOOS)}
 arch=${GOARCH:-$("$GO" env GOARCH)}
+version=$(sed -n 's/^const Version = "\([0-9.]*\)"/\1/p' internal/core/store.go)
+[[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Invalid application version' >&2; exit 1; }
 # Match the documented minimum OS instead of inheriting the build host version.
 if [ "$platform" = darwin ]; then
   export MACOSX_DEPLOYMENT_TARGET=13.0
@@ -35,15 +37,15 @@ if [ "$platform" = darwin ]; then
     *) echo "Unexpected macOS deployment target: $min_version (expected 13.0)" >&2; exit 1 ;;
   esac
   cp assets/icon.icns "$bundle/Contents/Resources/icon.icns"
-  cat > "$bundle/Contents/Info.plist" <<'PLIST'
+  cat > "$bundle/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
 <key>CFBundleName</key><string>MCP Connect</string>
 <key>CFBundleDisplayName</key><string>MCP Connect</string>
 <key>CFBundleIdentifier</key><string>eu.onecmcp.connect</string>
-<key>CFBundleVersion</key><string>29</string>
-<key>CFBundleShortVersionString</key><string>0.4.11</string>
+<key>CFBundleVersion</key><string>30</string>
+<key>CFBundleShortVersionString</key><string>$version</string>
 <key>CFBundleExecutable</key><string>mcp-connect</string>
 <key>CFBundleIconFile</key><string>icon.icns</string>
 <key>LSMinimumSystemVersion</key><string>13.0</string>

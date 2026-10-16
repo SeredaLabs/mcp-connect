@@ -28,7 +28,7 @@ Append **`--check`** to check availability without downloading or installing. Ap
 
 ## 📦 Portable copies
 
-Portable copies can check for updates but are not moved or overwritten automatically. Download the new portable archive from the [download page](https://seredalabs.github.io/mcp-connect/), close the app and AI clients, then replace the app at the same permanent location. If you change its path, use **Save & Connect** to repair registrations.
+Portable copies can check for updates but are not moved or overwritten automatically. Download the new portable archive from the [download page](https://seredalabs.github.io/mcp-connect/), close the app and AI clients, then replace the app at the same permanent location. If you change its path, use **Save & Apply** to repair registrations.
 
 `update --download` explicitly downloads an installer; it does not update a portable archive in place.
 

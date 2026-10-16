@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.11%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.12%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -47,10 +47,10 @@ The demo was recorded with version 0.4.4. Version 0.4.11 has an updated icon and
 2. Install it and open **MCP Connect** from Applications or your application menu. For a portable archive, extract it to a permanent location first.
 3. Enter a connection name and the final **HTTPS MCP endpoint**.
 4. Choose an authentication method and enter your credentials locally.
-5. Select your installed clients, then **Test Connection** and **Save & Connect**.
+5. Select your installed clients, then **Test Server** and **Save & Apply**.
 6. Restart the clients and start a new chat.
 
-**Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance. **How to connect** beside **Connect your apps** explains client setup. The **ⓘ** button beside the app name opens **About MCP Connect**, with the version, author, documentation and app-maintenance guidance.
+**Test Server** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance. **How to connect** beside **Connect your apps** opens the connection guide. Hover over a client or authentication mode for a contextual hint about scope, next steps and credentials. The **ⓘ** button beside the app name opens **About MCP Connect**, with the version, author, documentation and app-maintenance guidance.
 
 <a id="supported-clients"></a>
 
@@ -89,7 +89,7 @@ Install before setting up connections. macOS and Linux installers require admini
 
 On Ubuntu 24.04 or a compatible system, open the `.deb` in your software installer or run `sudo apt install ./mcp-connect-linux-amd64.deb` (use the ARM64 file on ARM systems). Other Linux distributions can use the archive with compatible desktop libraries.
 
-Before updating or uninstalling, close the app and MCP client sessions. Disconnect integrations before uninstalling. Profiles and vault secrets are preserved; use **Delete** in the app to remove a saved connection and its secret. Moving from a portable copy requires **Save & Connect** once from the installed copy to update adapter paths.
+Before updating or uninstalling, close the app and MCP client sessions. Disconnect integrations before uninstalling. Profiles and vault secrets are preserved; use **Delete** in the app to remove a saved connection and its secret. Moving from a portable copy requires **Save & Apply** once from the installed copy to update adapter paths.
 
 Installers are not publisher-signed: macOS `.pkg` files have no Developer ID Installer signature/notarization, and Windows installers have no Authenticode publisher signature. OS approval warnings can still appear. The macOS application retains its ad-hoc signature.
 
@@ -118,10 +118,18 @@ install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.
 
 | Indicator | Meaning |
 |---|---|
-| **Configured** · blue | Local registration is saved |
+| **Registered** · blue | Local registration exists; restart the client to load it |
 | **Verified** · green | The last explicit server check succeeded |
 | **Test required** · amber | Settings changed or need checking |
-| **Disabled / Not configured** · grey | The profile or client integration is inactive |
+| **Not registered** · grey | No direct registration exists |
+| **Will be added / removed** · amber | A client choice has not been applied |
+| **Needs attention / Cleanup needed** | Use the client's Retry button or open Details |
+
+Checkboxes select where to register a server; changes take effect only with **Save & Apply**. Status badges report registration separately from the last server check. Changing only client choices or the profile name does not contact the MCP server or read credentials. New endpoints and credential changes are checked before saving. Failed client actions have an individual **Retry** button; successful actions are retained. Details shows each client's result.
+
+Codex keeps a direct MCP registration for local app, CLI and IDE use. ChatGPT Desktop installs a local-execution plugin, which may also appear in Codex. If both entries appear in a Codex session, enable only one there. Claude Code registration applies across this user's projects. The Claude Desktop JSON integration applies to local desktop chat, not Cowork or claude.ai.
+
+**Disconnect** disables the saved profile before removing client entries. If cleanup fails, new adapter sessions remain blocked and cleanup can be retried. Existing sessions must still be closed. Unchecking every client on an existing profile and applying also disables it. Unsaved edits are protected by a discard prompt when switching profiles or closing.
 
 Indicators are not continuous monitoring. Restart clients to end existing adapter sessions after disconnecting.
 

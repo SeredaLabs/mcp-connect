@@ -13,7 +13,7 @@ type authSelector struct {
 	widget.BaseWidget
 	Selected  string
 	OnChanged func(string)
-	buttons   []*widget.Button
+	buttons   []*hintButton
 	options   []string
 }
 
@@ -30,7 +30,16 @@ func newAuthSelector(options []string) *authSelector {
 		case "API key":
 			icon = apiKeyIcon
 		}
-		button := widget.NewButtonWithIcon(value, icon, func() { s.SetSelected(value) })
+		button := newHintButton(value, icon, func() { s.SetSelected(value) }, func() string {
+			switch value {
+			case "Bearer token":
+				return authenticationHint("bearer")
+			case "API key":
+				return authenticationHint("api-key")
+			default:
+				return authenticationHint("basic")
+			}
+		})
 		button.Importance = widget.LowImportance
 		s.buttons = append(s.buttons, button)
 	}

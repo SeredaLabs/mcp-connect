@@ -20,21 +20,33 @@ import (
 )
 
 func Run(store *core.Store) error {
+	integrator, err := core.NewIntegrator()
+	if err != nil {
+		return err
+	}
 	a := app.NewWithID("eu.onecmcp.connect")
+	w := newWindow(a, store, integrator)
+	w.ShowAndRun()
+	return nil
+}
+
+func newWindow(a fyne.App, store *core.Store, integrator *core.Integrator) fyne.Window {
 	brandIcon := fyne.NewStaticResource("mcp-connect.png", assets.Icon)
 	a.SetIcon(brandIcon)
 	a.Settings().SetTheme(&connectTheme{})
 	w := a.NewWindow("MCP Connect")
-	w.Resize(fyne.NewSize(1020, 680))
+	w.Resize(fyne.NewSize(1020, 800))
 	w.SetMaster()
-	integrator, e := core.NewIntegrator()
-	if e != nil {
-		return e
-	}
 	var connections []core.Connection
 	var selected string
 	var busy bool
 	var loading bool
+	var savedProfile *core.Connection
+	var credentialsChanged bool
+	clientResults := map[string]map[string]core.ClientResult{}
+	retryButtons := map[string]*widget.Button{}
+	changes := widget.NewLabel("Changes apply when you choose Save & Apply.")
+	changes.Wrapping = fyne.TextWrapWord
 	type checkResult struct {
 		endpoint string
 		at       time.Time
@@ -77,10 +89,10 @@ func Run(store *core.Store) error {
 	}
 	var refreshAuthFields func()
 
-	claude := widget.NewCheck("Claude Code", nil)
-	codex := widget.NewCheck("Codex", nil)
-	desktop := widget.NewCheck("Claude Desktop", nil)
-	chatgpt := widget.NewCheck("ChatGPT Desktop", nil)
+	claude := newHintCheck("Claude Code", func() string { return clientHoverHint("claude") })
+	codex := newHintCheck("Codex", func() string { return clientHoverHint("codex") })
+	desktop := newHintCheck("Claude Desktop", func() string { return clientHoverHint("claude-desktop") })
+	chatgpt := newHintCheck("ChatGPT Desktop", func() string { return clientHoverHint("chatgpt") })
 	status := widget.NewLabel("Add a connection, then test and connect.")
 	status.Truncation = fyne.TextTruncateEllipsis
 	details := widget.NewLabel("")
@@ -111,48 +123,59 @@ func Run(store *core.Store) error {
 	for _, key := range []string{"claude", "codex", "claude-desktop", "chatgpt"} {
 		clientLabels[key] = newIndicator("Not configured", neutralTone)
 	}
+	chosenClients := func() map[string]bool {
+		return map[string]bool{"claude": claude.Checked, "codex": codex.Checked, "claude-desktop": desktop.Checked, "chatgpt": chatgpt.Checked}
+	}
+	formDirty := func() bool {
+		if savedProfile == nil {
+			return name.Text != "" || endpoint.Text != "" || login.Text != "" || password.Text != ""
+		}
+		if credentialsChanged || strings.TrimSpace(name.Text) != savedProfile.Name || strings.TrimSpace(endpoint.Text) != savedProfile.URL || currentAuth() != core.AuthMode(savedProfile.AuthType) || (currentAuth() == core.AuthAPIKey && core.APIKeyHeader(apiHeader.Selected) != core.APIKeyHeader(savedProfile.AuthHeader)) {
+			return true
+		}
+		for client, chosen := range chosenClients() {
+			if chosen != savedProfile.WantsClient(client) {
+				return true
+			}
+		}
+		return false
+	}
 	refreshStatus := func() {
-		for _, key := range []string{"claude", "codex", "claude-desktop", "chatgpt"} {
-			value := "Ready to configure"
+		chosen := chosenClients()
+		for _, key := range core.ClientIDs {
+			state := core.ClientState{}
 			if selected != "" {
-				value = integrator.Status(key, selected)
-			} else if core.FindClient(key) == "" {
-				value = "Client not found"
+				state = integrator.Inspect(key, selected)
 			}
-			tone := neutralTone
-			if strings.HasPrefix(value, "Configured") {
-				tone = blueTone
-			}
-			if strings.Contains(value, "unavailable") {
-				tone = amberTone
-			}
-			if strings.Contains(value, "repair") || strings.Contains(value, "conflict") || strings.Contains(value, "invalid") || strings.HasPrefix(value, "Cannot") {
-				tone = redTone
-			}
-			chosen := map[string]bool{"claude": claude.Checked, "codex": codex.Checked, "claude-desktop": desktop.Checked, "chatgpt": chatgpt.Checked}[key]
-			if !chosen {
-				value = "Not selected"
-				tone = neutralTone
-			}
-			switch {
-			case value == "Ready to configure":
-				value = "Not configured"
-			case value == "Client not found":
-				value = "Not installed"
-			case strings.Contains(value, "saved adapter"):
-				value = "Configured"
-			case strings.Contains(value, "unavailable"):
-				value = "Unavailable"
-			case strings.Contains(value, "repair"):
-				value = "Repair needed"
-			case strings.Contains(value, "conflict"):
-				value = "Name conflict"
+			pending := savedProfile != nil && chosen[key] != savedProfile.WantsClient(key)
+			result, hasResult := clientResults[selected][key]
+			value, tone := clientStatus(state, chosen[key], pending, hasResult && result.Err != nil)
+			if savedProfile != nil && !savedProfile.Enabled && state.Registered && !pending {
+				value, tone = "Cleanup needed", amberTone
 			}
 			clientLabels[key].Set(value, tone)
+			if retry := retryButtons[key]; retry != nil {
+				if hasResult && result.Err != nil && !formDirty() {
+					retry.Show()
+				} else {
+					retry.Hide()
+				}
+			}
+		}
+		if formDirty() {
+			changes.SetText("Unsaved changes · choose Save & Apply.")
+		} else if savedProfile != nil && !savedProfile.Enabled {
+			changes.SetText("Profile disabled. Save & Apply reconnects the selected clients.")
+		} else {
+			changes.SetText("Select clients, then Save & Apply. Badges open settings.")
 		}
 	}
 
 	refreshServerLamp := func() {
+		if savedProfile != nil && !savedProfile.Enabled {
+			serverLamp.Set("Profile disabled", neutralTone)
+			return
+		}
 		result, ok := checks[selected]
 		if ok && result.endpoint == endpoint.Text {
 			if result.ok {
@@ -168,6 +191,8 @@ func Run(store *core.Store) error {
 		if loading || busy {
 			return
 		}
+		credentialsChanged = true
+		refreshStatus()
 		delete(checks, selected)
 		serverLamp.Set("Changes not checked", amberTone)
 		feedbackLamp.Set("Test required", amberTone)
@@ -175,6 +200,11 @@ func Run(store *core.Store) error {
 		setDetails("Test the server to verify these settings. No background checks are performed.")
 		if list != nil {
 			list.Refresh()
+		}
+	}
+	name.OnChanged = func(string) {
+		if !loading && !busy {
+			refreshStatus()
 		}
 	}
 	endpoint.OnChanged = func(string) { invalidateCheck() }
@@ -198,7 +228,7 @@ func Run(store *core.Store) error {
 			invalidateCheck()
 		}
 	}
-	for _, check := range []*widget.Check{claude, codex, desktop, chatgpt} {
+	for _, check := range []*hintCheck{claude, codex, desktop, chatgpt} {
 		check.OnChanged = func(bool) {
 			if !loading {
 				refreshStatus()
@@ -213,6 +243,12 @@ func Run(store *core.Store) error {
 			return
 		}
 		connections = cs
+		for _, c := range cs {
+			if c.ID == selected {
+				savedProfile = &c
+				break
+			}
+		}
 		if list != nil {
 			list.Refresh()
 		}
@@ -222,6 +258,8 @@ func Run(store *core.Store) error {
 		loading = true
 		defer func() { loading = false }()
 		selected = ""
+		savedProfile = nil
+		credentialsChanged = false
 		loadedEndpoint = ""
 		authMethod.SetSelected("Login & password")
 		apiHeader.SetSelected("X-API-Key")
@@ -253,7 +291,7 @@ func Run(store *core.Store) error {
 		if c.Enabled {
 			text, tone = "Integration enabled", blueTone
 		}
-		if result, ok := checks[c.ID]; ok && result.endpoint == c.URL {
+		if result, ok := checks[c.ID]; ok && c.Enabled && result.endpoint == c.URL {
 			if result.ok {
 				text, tone = "Verified · "+result.at.Format("15:04"), greenTone
 			} else {
@@ -279,6 +317,8 @@ func Run(store *core.Store) error {
 		defer func() { loading = false }()
 		c := connections[id]
 		selected = c.ID
+		savedProfile = &c
+		credentialsChanged = false
 		loadedEndpoint = ""
 		authMethod.SetSelected(authLabels[core.AuthMode(c.AuthType)])
 		apiHeader.SetSelected(headerLabel(c.AuthHeader))
@@ -402,10 +442,11 @@ func Run(store *core.Store) error {
 					}
 				}
 				reload()
+				refreshServerLamp()
 			})
 		}()
 	}
-	test := widget.NewButtonWithIcon("Test Connection", testConnectionIcon, func() {
+	test := widget.NewButtonWithIcon("Test Server", testConnectionIcon, func() {
 		c, cred, e := snapshot()
 		if e != nil {
 			feedbackLamp.Set("Check settings", redTone)
@@ -434,56 +475,107 @@ func Run(store *core.Store) error {
 			checkedAt = time.Now()
 		})
 	})
-	save := widget.NewButtonWithIcon("Save & Connect", connectIcon, func() {
+	showReport := func(c core.Connection, report core.ApplyReport) {
+		if clientResults[c.ID] == nil {
+			clientResults[c.ID] = map[string]core.ClientResult{}
+		}
+		for _, result := range report {
+			clientResults[c.ID][result.Client] = result
+		}
+		text, failed := integrationSummary(clientResults[c.ID])
+		if !c.Enabled {
+			text += "\nProfile disabled. Close existing client sessions; new adapter sessions are blocked."
+		}
+		setDetails(text)
+		if !c.Enabled && failed > 0 {
+			status.SetText("Disabled · cleanup needed")
+			feedbackLamp.Set("Retry cleanup", amberTone)
+			details.SetText("New adapter sessions are blocked. Close existing sessions; retry remaining cleanup.")
+		} else if failed > 0 {
+			status.SetText("Saved · some clients need attention")
+			feedbackLamp.Set("Retry available", amberTone)
+			details.SetText("Successful changes kept. Retry the affected client; open Details for errors.")
+		} else if !c.Enabled {
+			status.SetText("Profile disabled · client entries removed")
+			feedbackLamp.Set("Disabled", neutralTone)
+			details.SetText("New adapter sessions are blocked. Close any existing client sessions.")
+		} else {
+			status.SetText("Applied · restart your clients")
+			feedbackLamp.Set("Applied", blueTone)
+			if c.ChatGPT {
+				details.SetText("Restart clients. Enable the ChatGPT plugin in a local-execution chat.")
+			} else {
+				details.SetText("Client settings saved. Test Server checks the remote connection separately.")
+			}
+		}
+	}
+	save := widget.NewButtonWithIcon("Save & Apply", connectIcon, func() {
 		c, cred, e := snapshot()
 		if e != nil {
-			feedbackLamp.Set("Check settings", redTone)
-			status.SetText("Connection settings need attention")
-			setDetails(e.Error())
 			dialog.ShowError(e, w)
 			return
 		}
+		existing, findErr := store.Find(c.ID)
 		if !c.Claude && !c.Codex && !c.ClaudeDesktop && !c.ChatGPT {
-			dialog.ShowInformation("Select a client", "Choose ChatGPT Desktop, Codex or a Claude client.", w)
-			return
+			if findErr != nil {
+				dialog.ShowInformation("Choose a client", "Select at least one client for this new connection.", w)
+				return
+			}
+			c.Enabled = false
 		}
+		localOnly := findErr == nil && existing.URL == c.URL && core.AuthMode(existing.AuthType) == core.AuthMode(c.AuthType) && core.APIKeyHeader(existing.AuthHeader) == core.APIKeyHeader(c.AuthHeader) && !credentialsChanged
 		selected = c.ID
-		var result core.ProbeResult
-		work("connect", func() (string, string, error) {
-			var err error
-			cred, err = resolveCredentials(c, cred)
-			if err != nil {
-				return "", "", err
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+		var report core.ApplyReport
+		var result *core.ProbeResult
+		kind := "apply"
+		if !localOnly {
+			kind = "connect"
+		}
+		work(kind, func() (string, string, error) {
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			defer cancel()
-			r, e := core.Probe(ctx, c.URL, cred)
-			if e != nil {
-				return "", "", e
+			if localOnly {
+				if err := store.SaveSettings(c); err != nil {
+					return "", "", err
+				}
+			} else {
+				var err error
+				cred, err = resolveCredentials(c, cred)
+				if err != nil {
+					return "", "", err
+				}
+				probeCtx, stopProbe := context.WithTimeout(ctx, 30*time.Second)
+				r, err := core.Probe(probeCtx, c.URL, cred)
+				stopProbe()
+				if err != nil {
+					return "", "", err
+				}
+				result = &r
+				if err := store.Save(c, cred); err != nil {
+					return "", "", err
+				}
 			}
-			result = r
-			if e := store.Save(c, cred); e != nil {
-				return "", "", e
-			}
-			if e := integrator.Sync(ctx, c); e != nil {
-				return "", "", fmt.Errorf("Connection saved securely. Integration needs attention:\n%w", e)
-			}
-			message := "Credentials stored securely. The adapter runs only when your client needs it."
-			if c.ChatGPT {
-				message += " ChatGPT: local plugin installed. Restart ChatGPT Desktop, open a chat that runs locally and enable the plugin. OpenAI local plugins are shared with Codex; a second direct MCP entry is omitted when both are selected."
-			}
-			return "Configured · restart your clients", message, nil
+			report = integrator.Apply(ctx, c)
+			return "Client settings applied", "", nil
 		}, func() {
-			verified = &result
-			checkedAt = time.Now()
-			verificationNote = fullDetails
+			savedProfile = &c
+			credentialsChanged = false
 			loading = true
 			password.SetText("")
+			login.SetText("")
+			loadedEndpoint = ""
 			loading = false
 			pageTitle.Text = c.Name
 			pageTitle.Refresh()
+			showReport(c, report)
+			if result != nil {
+				verified = result
+				checkedAt = time.Now()
+				verificationNote = fullDetails
+			}
 		})
 	})
+
 	save.Importance = widget.HighImportance
 	edit := widget.NewButtonWithIcon("Edit saved credentials", theme.DocumentCreateIcon(), func() {
 		if selected == "" {
@@ -523,10 +615,18 @@ func Run(store *core.Store) error {
 			dialog.ShowError(e, w)
 			return
 		}
+		var report core.ApplyReport
 		work("disconnect", func() (string, string, error) {
-			e := store.Disable(context.Background(), integrator, c)
-			return "Disconnected", "Saved credentials retained for reconnecting.", e
-		}, nil)
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			defer cancel()
+			var err error
+			report, err = store.DisableClients(ctx, integrator, c)
+			return "Disconnected", "Saved credentials retained for reconnecting.", err
+		}, func() {
+			c.Enabled = false
+			savedProfile = &c
+			showReport(c, report)
+		})
 	})
 	remove := widget.NewButtonWithIcon("Delete", deleteConnectionIcon, func() {
 		if selected == "" {
@@ -550,7 +650,58 @@ func Run(store *core.Store) error {
 			}, clear)
 		}, w)
 	})
-	add := widget.NewButtonWithIcon("Add Connection", theme.ContentAddIcon(), func() { list.UnselectAll(); clear() })
+	confirmDiscard := func(next func()) {
+		if formDirty() {
+			dialog.ShowConfirm("Discard unsaved changes?", "Your edits have not been applied. Discard them and continue?", func(ok bool) {
+				if ok {
+					next()
+				}
+			}, w)
+			return
+		}
+		next()
+	}
+	loadSelection := list.OnSelected
+	restoringSelection := false
+	selectionPending := false
+	list.OnSelected = func(id widget.ListItemID) {
+		if restoringSelection {
+			return
+		}
+		if busy || !formDirty() {
+			loadSelection(id)
+			return
+		}
+		restoreSelection := func() {
+			restoringSelection = true
+			defer func() { restoringSelection = false }()
+			list.UnselectAll()
+			for n, c := range connections {
+				if c.ID == selected {
+					list.Select(n)
+					break
+				}
+			}
+		}
+		restoreSelection()
+		if selectionPending {
+			return
+		}
+		selectionPending = true
+		dialog.ShowConfirm("Discard unsaved changes?", "Your edits have not been applied. Discard them and open another connection?", func(ok bool) {
+			selectionPending = false
+			if !ok || busy {
+				return
+			}
+			loadSelection(id)
+			restoringSelection = true
+			list.Select(id)
+			restoringSelection = false
+		}, w)
+	}
+	add := widget.NewButtonWithIcon("Add Connection", theme.ContentAddIcon(), func() {
+		confirmDiscard(func() { list.UnselectAll(); clear() })
+	})
 	buttons = []*widget.Button{test, save, edit, disconnect, remove, add}
 	edit.Importance = widget.LowImportance
 	disconnect.Importance = widget.LowImportance
@@ -558,7 +709,7 @@ func Run(store *core.Store) error {
 
 	openPlugin := widget.NewButtonWithIcon("Settings", theme.SettingsIcon(), func() {
 		if selected == "" {
-			dialog.ShowInformation("ChatGPT plugin", "Save & Connect with ChatGPT Desktop selected first.", w)
+			dialog.ShowInformation("ChatGPT plugin", "Save & Apply with ChatGPT Desktop selected first.", w)
 			return
 		}
 		link, err := integrator.ChatGPTSetupURL(selected)
@@ -592,9 +743,32 @@ func Run(store *core.Store) error {
 		}
 		showClaudeSettings(a, w, key, path)
 	}
-	clientRow := func(check *widget.Check, key string) fyne.CanvasObject {
+	clientRow := func(check *hintCheck, key string) fyne.CanvasObject {
 		clientLabels[key].label.Truncation = fyne.TextTruncateEllipsis
-		return container.NewGridWithColumns(2, check, newIndicatorAction(clientLabels[key], func() { openClientSettings(key) }))
+		retry := widget.NewButton("Retry", func() {
+			if busy || formDirty() {
+				return
+			}
+			c, err := store.Find(selected)
+			if err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+			var report core.ApplyReport
+			work("apply", func() (string, string, error) {
+				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+				defer cancel()
+				report = integrator.Apply(ctx, c, key)
+				return "Client settings applied", "", nil
+			}, func() { showReport(c, report) })
+		})
+		retry.Importance = widget.LowImportance
+		retry.Hide()
+		retryButtons[key] = retry
+		buttons = append(buttons, retry)
+		badge := newIndicatorAction(clientLabels[key], func() { openClientSettings(key) })
+		row := container.NewGridWithColumns(2, check, badge)
+		return container.NewVBox(row, retry)
 	}
 	group := func(title string, rows ...fyne.CanvasObject) fyne.CanvasObject {
 		text := canvas.NewText(title, ink)
@@ -627,6 +801,7 @@ func Run(store *core.Store) error {
 		}
 		credentialFields.Refresh()
 	}
+	refreshAuthFields()
 	fields := container.NewVBox(
 		container.NewGridWithColumns(2, field("Connection name", name), field("Server HTTPS URL", endpoint)), authMethod, credentialFields)
 	title := canvas.NewText("Connection settings", ink)
@@ -643,13 +818,13 @@ func Run(store *core.Store) error {
 			text.Wrapping = fyne.TextWrapWord
 			return widget.NewAccordionItem(title, text)
 		}
-		guide := widget.NewAccordion(
-			section("Connect once", "Choose your apps, then Save & Connect. Restart the selected apps and start a new chat. Configured means setup is saved; Test Connection checks the server. Click a status badge to open that app’s settings."),
-			section("OpenAI", "Codex uses a local MCP adapter. ChatGPT Desktop uses a local plugin: enable it in a chat that runs on this computer. The plugin can also be available in Codex. Click its status badge to open the plugin page."),
-			section("Anthropic", "Claude Desktop and Claude Code use the same local adapter, with separate app settings. Click a status badge for the app’s MCP settings. Configuration files are available as an additional action."),
+		basics := widget.NewAccordion(
+			section("Connect once", "Choose your clients, then Save & Apply. Checkboxes are your choices; badges show registration. Unsaved changes do not alter clients. Test Server checks only the server. Changing client choices does not require a server check. Retry fixes one failed client. Restart clients and start a new chat after applying."),
+			section("OpenAI", "Codex uses a local MCP adapter. ChatGPT Desktop uses a local plugin: enable it in a chat that runs on this computer. The plugin can also appear in Codex. Codex keeps its direct MCP entry for CLI and IDE compatibility. If both entries appear in a Codex session, enable only one there. Click a status badge to open settings."),
+			section("Anthropic", "Claude Code registers for all projects of this user. Claude Desktop registers for its local chat, not Cowork or claude.ai. Click a status badge for the app’s MCP settings. Configuration files are available as an additional action."),
 			section("Web & mobile", "This utility configures this computer. A regular browser or mobile chat does not load its local adapter. Those surfaces need a separate remote integration."))
-		guide.Open(0)
-		popup := dialog.NewCustom("How to connect", "Close", container.NewVScroll(guide), w)
+		basics.Open(0)
+		popup := dialog.NewCustom("How to connect", "Close", container.NewVScroll(basics), w)
 		popup.Resize(fyne.NewSize(620, 440))
 		popup.Show()
 	})
@@ -668,10 +843,10 @@ func Run(store *core.Store) error {
 	viewDetails.Importance = widget.LowImportance
 	status.TextStyle.Bold = true
 	feedback := panel(container.NewVBox(container.NewBorder(nil, nil, feedbackLamp, viewDetails, status), details, progress), 10)
-	content := container.NewVBox(settingsCard, spacer(4), clientsCard, spacer(4), feedback)
+	content := container.NewVBox(settingsCard, spacer(4), clientsCard)
 	header := pad(container.NewBorder(nil, nil, nil, serverLamp, pageTitle), 12)
-	footer := pad(container.NewBorder(nil, nil, container.NewHBox(disconnect, remove), container.NewHBox(test, save)), 10)
-	right := container.NewBorder(header, footer, nil, nil, pad(container.NewVBox(content), 12))
+	footer := pad(container.NewVBox(changes, feedback, container.NewBorder(nil, nil, container.NewHBox(disconnect, remove), container.NewHBox(test, save))), 10)
+	right := container.NewBorder(header, footer, nil, nil, container.NewVScroll(pad(container.NewVBox(content), 12)))
 
 	brand := canvas.NewText("MCP Connect", ink)
 	brand.TextSize = 18
@@ -695,7 +870,7 @@ func Run(store *core.Store) error {
 		credit := widget.NewHyperlink("SeredaLabs", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs"})
 		credit.TextStyle.Bold = true
 		docs := widget.NewHyperlink("Documentation", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs/mcp-connect"})
-		maintenance := widget.NewLabel(fmt.Sprintf("Saved connections with integrations enabled: %d.\n\nClose the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active))
+		maintenance := widget.NewLabel(fmt.Sprintf("Saved connections with integrations enabled: %d.\n\nClose the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Apply from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active))
 		maintenance.Wrapping = fyne.TextWrapWord
 		content := container.NewVBox(identity, updates.aboutContent(), widget.NewSeparator(), container.NewHBox(widget.NewLabel("Made & designed by"), credit), docs,
 			widget.NewAccordion(widget.NewAccordionItem("Moving, updating & removing", maintenance)))
@@ -721,7 +896,14 @@ func Run(store *core.Store) error {
 	sidebar := pad(container.NewBorder(sidebarTop, sidebarFooter, nil, nil, list), 12)
 
 	shell := container.New(&shellLayout{}, sidebar, right)
-	w.SetContent(shell)
+	hintLayer := container.New(&hintLayerLayout{})
+	for _, check := range []*hintCheck{claude, codex, desktop, chatgpt} {
+		check.hint.layer = hintLayer
+	}
+	for _, button := range authMethod.buttons {
+		button.hint.layer = hintLayer
+	}
+	w.SetContent(container.NewStack(shell, hintLayer))
 	reload()
 	clear()
 	if len(connections) > 0 {
@@ -733,15 +915,25 @@ func Run(store *core.Store) error {
 			dialog.ShowInformation("Action in progress", "Wait for the current action to finish before closing.", w)
 			return
 		}
-		password.SetText("")
-		w.SetCloseIntercept(nil)
-		w.Close()
+		confirmDiscard(func() {
+			loading = true
+			password.SetText("")
+			w.SetCloseIntercept(nil)
+			w.Close()
+		})
+	})
+	w.SetOnClosed(func() {
+		for _, check := range []*hintCheck{claude, codex, desktop, chatgpt} {
+			check.hint.leave()
+		}
+		for _, button := range authMethod.buttons {
+			button.hint.leave()
+		}
 	})
 	if updates.auto.Checked {
 		updates.checkNow()
 	}
-	w.ShowAndRun()
-	return nil
+	return w
 }
 
 var ink = color.NRGBA{R: 26, G: 39, B: 62, A: 255}

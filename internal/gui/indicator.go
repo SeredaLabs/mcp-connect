@@ -41,6 +41,7 @@ func (i *indicator) Set(text string, tone color.NRGBA) {
 	// Pale background keeps the signal readable without tinting the whole card.
 	i.background.FillColor = color.NRGBA{R: uint8(239 + int(tone.R)/16), G: uint8(239 + int(tone.G)/16), B: uint8(239 + int(tone.B)/16), A: 255}
 	i.background.Refresh()
+	i.Refresh()
 }
 func (i *indicator) CreateRenderer() fyne.WidgetRenderer {
 	dot := container.NewCenter(container.NewGridWrap(fyne.NewSize(9, 9), i.dot))

@@ -43,4 +43,4 @@ Windows packaging generates embedded icon resources with pinned `go-winres v0.3.
 
 After `bash scripts/build.sh`, run `bash scripts/package-installer.sh` on the target OS. macOS uses built-in `pkgbuild` and `productbuild`; Linux uses `dpkg-deb`; Windows uses Inno Setup 7.1.0 (`ISCC` points to `ISCC.exe`, or `iscc` must be on PATH). The Windows compiler is a build-only tool. CI downloads the official release and checks a pinned SHA-256 digest.
 
-CI installs 0.4.10, upgrades it to the current build on all six targets, checks the installed CLI, and verifies removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.
+CI installs 0.4.11, upgrades it to the current build on all six targets, checks the installed CLI, and verifies removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.

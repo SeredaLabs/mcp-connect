@@ -36,4 +36,4 @@ Tokens and keys are entered manually. OAuth sign-in, automatic token renewal and
 
 A `401` response means authentication failed; a `403` response means access was denied. Check expiry, server permissions and token scope. The app cannot grant server permissions.
 
-Disconnect removes local registrations and keeps the saved secret. Delete also removes the profile and secret. Restart clients to stop already running adapter sessions.
+Disconnect disables the profile before removing local registrations and keeps the saved secret. If cleanup fails, the profile stays disabled and cleanup can be retried. Delete also removes the profile and secret. Restart clients to stop already running adapter sessions.
