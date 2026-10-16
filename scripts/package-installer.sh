@@ -25,7 +25,7 @@ case "$platform" in
   <title>MCP Connect</title>
   <options customize="never" require-scripts="false"/>
   <domains enable_localSystem="true" enable_currentUserHome="false" enable_anywhere="false"/>
-  <allowed-os-versions><os-version min="13.0"/></allowed-os-versions>
+  <volume-check><allowed-os-versions><os-version min="13.0"/></allowed-os-versions></volume-check>
   <choices-outline><line choice="application"/></choices-outline>
   <choice id="application" visible="false"><pkg-ref id="eu.onecmcp.connect.pkg"/></choice>
   <pkg-ref id="eu.onecmcp.connect.pkg" version="$version" onConclusion="none">application.pkg</pkg-ref>
