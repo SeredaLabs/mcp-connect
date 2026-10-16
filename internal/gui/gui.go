@@ -621,17 +621,25 @@ func Run(store *core.Store) error {
 	clientsTitle.TextSize = 16
 	clientsTitle.TextStyle.Bold = true
 	connectionHelp := widget.NewButtonWithIcon("Help", theme.HelpIcon(), func() {
-		section := func(title, body string) fyne.CanvasObject {
+		section := func(title, body string) *widget.AccordionItem {
 			text := widget.NewLabel(body)
 			text.Wrapping = fyne.TextWrapWord
-			return container.NewVBox(widget.NewLabelWithStyle(title, fyne.TextAlignLeading, fyne.TextStyle{Bold: true}), text)
+			return widget.NewAccordionItem(title, text)
 		}
-		guide := container.NewVBox(
+		active := 0
+		for _, c := range connections {
+			if c.Enabled {
+				active++
+			}
+		}
+		guide := widget.NewAccordion(
 			section("Connect once", "Choose your apps, then Save & Connect. Restart the selected apps and start a new chat. Configured means setup is saved; Test Connection checks the server. Click a status badge to open that app’s settings."),
 			section("OpenAI", "Codex uses a local MCP adapter. ChatGPT Desktop uses a local plugin: enable it in a chat that runs on this computer. The plugin can also be available in Codex. Click its status badge to open the plugin page."),
 			section("Anthropic", "Claude Desktop and Claude Code use the same local adapter, with separate app settings. Click a status badge for the app’s MCP settings. Configuration files are available as an additional action."),
-			section("Web & mobile", "This utility configures this computer. A regular browser or mobile chat does not load its local adapter. Those surfaces need a separate remote integration."))
-		popup := dialog.NewCustom("Connection guide", "Close", guide, w)
+			section("Web & mobile", "This utility configures this computer. A regular browser or mobile chat does not load its local adapter. Those surfaces need a separate remote integration."),
+			section("Moving, updating or removing", fmt.Sprintf("%d saved connections have integrations enabled. Close the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active)))
+		guide.Open(0)
+		popup := dialog.NewCustom("Help", "Close", container.NewVScroll(guide), w)
 		popup.Resize(fyne.NewSize(620, 440))
 		popup.Show()
 	})
@@ -682,20 +690,6 @@ func Run(store *core.Store) error {
 		list.Select(0)
 	}
 
-	w.SetMainMenu(fyne.NewMainMenu(fyne.NewMenu("Help", fyne.NewMenuItem("Moving or removing this app", func() {
-		cs, e := store.Load()
-		if e != nil {
-			dialog.ShowError(e, w)
-			return
-		}
-		active := 0
-		for _, c := range cs {
-			if c.Enabled {
-				active++
-			}
-		}
-		dialog.ShowInformation("Before moving or removing", fmt.Sprintf("%d saved connections have integrations enabled. Disconnect each connection before deleting the app. After moving or updating it, use Save & Connect to repair the absolute paths. Existing client sessions must be restarted to unload an adapter.", active), w)
-	}))))
 	w.SetCloseIntercept(func() {
 		if busy {
 			dialog.ShowInformation("Action in progress", "Wait for the current action to finish before closing.", w)

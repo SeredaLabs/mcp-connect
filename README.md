@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.7%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.8%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -47,7 +47,7 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 5. Select your installed clients, then **Test Connection** and **Save & Connect**.
 6. Restart the clients and start a new chat.
 
-**Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance.
+**Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance. The single **Help** button beside **Connect your apps** includes setup guidance and advice for moving, updating or removing the app.
 
 <a id="supported-clients"></a>
 
