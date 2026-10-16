@@ -5,7 +5,7 @@
 </h1>
 
 [![Збирання](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Попередній випуск](https://img.shields.io/badge/release-0.4.8%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Попередній випуск](https://img.shields.io/badge/release-0.4.9%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Платформи](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#платформи)
 [![Ліцензія](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
 
@@ -87,7 +87,7 @@ install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.
 4. Виберіть встановлені клієнти, натисніть **Test Connection**, потім **Save & Connect**.
 5. Перезапустіть клієнти й почніть новий чат.
 
-**Test Connection** перевіряє узгодження MCP-з'єднання та перелік інструментів, не викликаючи бізнес-інструменти. Плашка статусу клієнта відкриває його налаштування або інструкцію з підключення. Єдина кнопка **Help** біля **Connect your apps** містить довідку з підключення, перенесення, оновлення й видалення програми.
+**Test Connection** перевіряє узгодження MCP-з'єднання та перелік інструментів, не викликаючи бізнес-інструменти. Плашка статусу клієнта відкриває його налаштування або інструкцію з підключення. Кнопка **How to connect** біля **Connect your apps** пояснює підключення клієнтів. Кнопка **ⓘ Про програму** біля назви містить версію, автора, документацію й поради з обслуговування утиліти.
 
 <a id="клієнти"></a>
 
@@ -147,7 +147,7 @@ install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.
 
 ## 🧪 Межі попереднього випуску
 
-Поточна версія **0.4.8 Preview** призначена для розробників і раннього тестування. У ній виправлено мінімальну версію macOS у пакуванні: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
+Поточна версія **0.4.9 Preview** призначена для розробників і раннього тестування. У ній виправлено мінімальну версію macOS у пакуванні: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
 
 Інтерфейс Apple Silicon перевірено на фізичному Mac із macOS 14.4.1. Графічний запуск перевірено для обох Linux-архітектур і Windows AMD64; у Windows використано програмний OpenGL лише в CI, він не входить до пакунка. **Windows ARM64 залишається експериментальним:** адаптер і сховище секретів пройшли перевірки, але графічний запуск не підтверджено. Також не підтверджено інтерфейс на фізичному Intel Mac та запуск на macOS 13.
 

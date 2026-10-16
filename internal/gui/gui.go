@@ -620,26 +620,19 @@ func Run(store *core.Store) error {
 	clientsTitle := canvas.NewText("Connect your apps", ink)
 	clientsTitle.TextSize = 16
 	clientsTitle.TextStyle.Bold = true
-	connectionHelp := widget.NewButtonWithIcon("Help", theme.HelpIcon(), func() {
+	connectionHelp := widget.NewButtonWithIcon("How to connect", theme.HelpIcon(), func() {
 		section := func(title, body string) *widget.AccordionItem {
 			text := widget.NewLabel(body)
 			text.Wrapping = fyne.TextWrapWord
 			return widget.NewAccordionItem(title, text)
 		}
-		active := 0
-		for _, c := range connections {
-			if c.Enabled {
-				active++
-			}
-		}
 		guide := widget.NewAccordion(
 			section("Connect once", "Choose your apps, then Save & Connect. Restart the selected apps and start a new chat. Configured means setup is saved; Test Connection checks the server. Click a status badge to open that app’s settings."),
 			section("OpenAI", "Codex uses a local MCP adapter. ChatGPT Desktop uses a local plugin: enable it in a chat that runs on this computer. The plugin can also be available in Codex. Click its status badge to open the plugin page."),
 			section("Anthropic", "Claude Desktop and Claude Code use the same local adapter, with separate app settings. Click a status badge for the app’s MCP settings. Configuration files are available as an additional action."),
-			section("Web & mobile", "This utility configures this computer. A regular browser or mobile chat does not load its local adapter. Those surfaces need a separate remote integration."),
-			section("Moving, updating or removing", fmt.Sprintf("%d saved connections have integrations enabled. Close the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active)))
+			section("Web & mobile", "This utility configures this computer. A regular browser or mobile chat does not load its local adapter. Those surfaces need a separate remote integration."))
 		guide.Open(0)
-		popup := dialog.NewCustom("Help", "Close", container.NewVScroll(guide), w)
+		popup := dialog.NewCustom("How to connect", "Close", container.NewVScroll(guide), w)
 		popup.Resize(fyne.NewSize(620, 440))
 		popup.Show()
 	})
@@ -661,12 +654,36 @@ func Run(store *core.Store) error {
 	right := container.NewBorder(header, footer, nil, nil, pad(container.NewVBox(content), 12))
 
 	brand := canvas.NewText("MCP Connect", ink)
-	brand.TextSize = 20
+	brand.TextSize = 18
 	brand.TextStyle.Bold = true
 	logo := canvas.NewImageFromResource(brandIcon)
 	logo.FillMode = canvas.ImageFillContain
-	logo.SetMinSize(fyne.NewSize(28, 28))
-	brandRow := container.NewHBox(logo, brand)
+	logo.SetMinSize(fyne.NewSize(24, 24))
+	aboutButton := widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
+		active := 0
+		for _, c := range connections {
+			if c.Enabled {
+				active++
+			}
+		}
+		title := widget.NewLabelWithStyle("MCP Connect", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+		aboutLogo := canvas.NewImageFromResource(brandIcon)
+		aboutLogo.FillMode = canvas.ImageFillContain
+		aboutLogo.SetMinSize(fyne.NewSize(48, 48))
+		identity := container.NewHBox(aboutLogo, container.NewVBox(title, widget.NewLabel("Version "+core.Version)))
+		credit := widget.NewHyperlink("SeredaLabs", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs"})
+		credit.TextStyle.Bold = true
+		docs := widget.NewHyperlink("Documentation", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs/mcp-connect"})
+		maintenance := widget.NewLabel(fmt.Sprintf("Saved connections with integrations enabled: %d.\n\nClose the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active))
+		maintenance.Wrapping = fyne.TextWrapWord
+		content := container.NewVBox(identity, widget.NewLabel("Made & designed by"), credit, docs,
+			widget.NewAccordion(widget.NewAccordionItem("Moving, updating & removing", maintenance)))
+		popup := dialog.NewCustom("About MCP Connect", "Close", container.NewVScroll(content), w)
+		popup.Resize(fyne.NewSize(520, 340))
+		popup.Show()
+	})
+	aboutButton.Importance = widget.LowImportance
+	brandRow := container.NewBorder(nil, nil, container.NewHBox(logo, brand), aboutButton)
 	sidebarTop := container.NewVBox(brandRow, spacer(10), widget.NewLabelWithStyle("CONNECTIONS", fyne.TextAlignLeading, fyne.TextStyle{Bold: true}))
 	versionNote := canvas.NewText("MCP Connect · v"+core.Version, neutralTone)
 	versionNote.TextSize = 11
