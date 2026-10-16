@@ -18,21 +18,27 @@ jobs:
           - runner: macos-15
             os: darwin
             arch: arm64
+            previous-sha256: d1b01f576361ebbd1b6529396cb67442b38b7dd277f657c77c2801217952405d
           - runner: macos-15-intel
             os: darwin
             arch: amd64
+            previous-sha256: c974f7dac5cea8e76580e4a373c89b5c416d0e3e6d5f2db2e29de722b505745a
           - runner: ubuntu-24.04
             os: linux
             arch: amd64
+            previous-sha256: 329d272f565cbf21cb2444ef87efd054cad1925654f63a7318fceda63dfb333f
           - runner: ubuntu-24.04-arm
             os: linux
             arch: arm64
+            previous-sha256: 31e4ef02386a9eae3880a9704cd634d7df525614364ac9680da99fadb4e8f3f9
           - runner: windows-2025
             os: windows
             arch: amd64
+            previous-sha256: d1fc5ec4742bd2fe2d4afe6a45a1bf6e3e4afc5f9c1d756606fb8b603a4b8a57
           - runner: windows-11-arm
             os: windows
             arch: arm64
+            previous-sha256: 98e900b5480faa231e5003d7014fdfec2a02e14bc6949388db02664caf0a8c6a
     timeout-minutes: 30
     runs-on: ${{ matrix.runner }}
     steps:
@@ -93,6 +99,39 @@ jobs:
         run: |
           ./scripts/build.sh
           ./scripts/package-installer.sh
+      - name: Prepare existing installation for upgrade (macOS/Linux)
+        if: matrix.os != 'windows'
+        shell: bash
+        run: |
+          if [ '${{ matrix.os }}' = darwin ]; then
+            filename='mcp-connect-darwin-${{ matrix.arch }}-installer.pkg'
+          else
+            filename='mcp-connect-linux-${{ matrix.arch }}.deb'
+          fi
+          previous="$RUNNER_TEMP/$filename"
+          curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
+            "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.10/$filename" --output "$previous"
+          if [ '${{ matrix.os }}' = darwin ]; then
+            echo '${{ matrix.previous-sha256 }}'"  $previous" | shasum -a 256 -c -
+            sudo installer -pkg "$previous" -target /
+            test "$(/Applications/'MCP Connect.app'/Contents/MacOS/mcp-connect version)" = '0.4.10'
+          else
+            echo '${{ matrix.previous-sha256 }}'"  $previous" | sha256sum -c -
+            sudo apt-get install -y "$previous"
+            test "$(mcp-connect version)" = '0.4.10'
+          fi
+      - name: Prepare existing installation for upgrade (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $filename = 'mcp-connect-windows-${{ matrix.arch }}-setup.exe'
+          $previous = Join-Path $env:RUNNER_TEMP $filename
+          Invoke-WebRequest "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.10/$filename" -OutFile $previous
+          if ((Get-FileHash $previous -Algorithm SHA256).Hash.ToLowerInvariant() -ne '${{ matrix.previous-sha256 }}') { throw 'Previous installer hash mismatch' }
+          $process = Start-Process $previous -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw 'Previous installation failed' }
+          $binary = Join-Path $env:LOCALAPPDATA 'Programs\MCP Connect\mcp-connect.exe'
+          if ((& $binary version) -ne '0.4.10') { throw 'Previous installed version mismatch' }
       - name: Check installed macOS package
         if: matrix.os == 'darwin'
         shell: bash
