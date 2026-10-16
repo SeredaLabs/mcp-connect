@@ -31,6 +31,7 @@ OutputBaseFilename=mcp-connect-windows-{#TargetArch}-setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
+SetupIconFile=..\..\assets\icon.ico
 UninstallDisplayIcon={app}\mcp-connect.exe
 CloseApplications=yes
 RestartApplications=no
