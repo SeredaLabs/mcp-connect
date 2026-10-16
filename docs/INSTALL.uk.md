@@ -5,7 +5,7 @@
 </h1>
 
 [![Збирання](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Попередній випуск](https://img.shields.io/badge/release-0.4.9%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Попередній випуск](https://img.shields.io/badge/release-0.4.10%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Платформи](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#платформи)
 [![Ліцензія](https://img.shields.io/badge/license-MIT-purple)](https://github.com/SeredaLabs/mcp-connect/blob/main/LICENSE)
 
@@ -14,6 +14,10 @@
 MCP Connect — компактна настільна утиліта для підключення AI-клієнтів до HTTPS MCP-серверів. Введіть адресу сервера й облікові дані, виберіть програми та підключіться. Секрети залишаються в захищеному сховищі ОС; клієнт запускає адаптер за потреби.
 
 **Користувачам:** [Завантажити](https://github.com/SeredaLabs/mcp-connect/releases) · [Підключення](#підключення) · [Авторизація](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/AUTHENTICATION.uk.md)
+
+**[⬇ Завантажити для вашого комп’ютера](https://seredalabs.github.io/mcp-connect/)**
+
+Сторінка визначає ОС і підбирає установник, якщо браузер повідомляє архітектуру. Якщо процесор не визначено, виберіть його один раз. Портативні архіви також доступні.
 
 **Про проєкт:** [Безпека](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/SECURITY.uk.md) · [Збирання з коду](https://github.com/SeredaLabs/mcp-connect/blob/main/docs/BUILD.uk.md)
 
@@ -25,7 +29,7 @@ MCP Connect — компактна настільна утиліта для пі
 
 Профіль підключення → логін і пароль / Bearer token / API key → вибір AI-клієнтів. GIF відтворюється циклічно. Адресу сервера й поля облікових даних розмито; використано лише вигадані дані, без підключення до справжнього сервера.
 
-Демо записано у версії 0.4.4. У версії 0.4.9 оновлено іконку та розділено вікна **About MCP Connect** і **How to connect**.
+Демо записано у версії 0.4.4. У версії 0.4.10 оновлено іконку та розділено вікна **About MCP Connect** і **How to connect**.
 
 [▶ Переглянути або завантажити повне MP4-демо](https://github.com/SeredaLabs/mcp-connect/blob/main/assets/demo/mcp-connect-demo.mp4)
 
@@ -149,7 +153,7 @@ install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.
 
 ## 🧪 Межі попереднього випуску
 
-Поточна версія **0.4.9 Preview** призначена для розробників і раннього тестування. Починаючи з версії 0.4.4, у пакуванні виправлено мінімальну версію macOS: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
+Поточна версія **0.4.10 Preview** призначена для розробників і раннього тестування. Починаючи з версії 0.4.4, у пакуванні виправлено мінімальну версію macOS: 13.0. macOS-пакунки 0.4.3 фактично вимагали macOS 15; використовуйте виправлений випуск.
 
 Інтерфейс Apple Silicon перевірено на фізичному Mac із macOS 14.4.1. Графічний запуск перевірено для обох Linux-архітектур і Windows AMD64; у Windows використано програмний OpenGL лише в CI, він не входить до пакунка. **Windows ARM64 залишається експериментальним:** адаптер і сховище секретів пройшли перевірки, але графічний запуск не підтверджено. Також не підтверджено інтерфейс на фізичному Intel Mac та запуск на macOS 13.
 

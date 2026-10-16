@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.9%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.10%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -14,6 +14,8 @@
 MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP servers. Enter your server and credentials, choose your apps, and connect. Secrets stay in your operating system's secure store; the client starts the adapter when needed.
 
 **Use the app:** [Download](https://github.com/SeredaLabs/mcp-connect/releases) · [Setup](#get-connected) · [Authentication](docs/AUTHENTICATION.md)
+
+**[⬇ Download for your computer](https://seredalabs.github.io/mcp-connect/)**
 
 **Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md)
 
@@ -25,7 +27,7 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 Connection profiles → login & password / Bearer token / API key → AI client selection. The GIF loops automatically; server addresses and credential fields are blurred. Demonstration data only, without a live server connection.
 
-The demo was recorded with version 0.4.4. Version 0.4.9 has an updated icon and separate **About MCP Connect** and **How to connect** dialogs.
+The demo was recorded with version 0.4.4. Version 0.4.10 has an updated icon and separate **About MCP Connect** and **How to connect** dialogs.
 
 [▶ Watch or download the full MP4 demo](assets/demo/mcp-connect-demo.mp4)
 
@@ -42,7 +44,7 @@ The demo was recorded with version 0.4.4. Version 0.4.9 has an updated icon and 
 
 ## 🔌 Get connected
 
-1. Download the installer for your OS and processor from [Releases](https://github.com/SeredaLabs/mcp-connect/releases).
+1. Open [Download MCP Connect](https://seredalabs.github.io/mcp-connect/). It detects your OS and selects the installer when processor information is available; otherwise choose your processor. Portable archives and all packages remain available.
 2. Install it and open **MCP Connect** from Applications or your application menu. For a portable archive, extract it to a permanent location first.
 3. Enter a connection name and the final **HTTPS MCP endpoint**.
 4. Choose an authentication method and enter your credentials locally.
