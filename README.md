@@ -90,6 +90,13 @@ Before updating or uninstalling, close the app and MCP client sessions. Disconne
 
 Installers are not publisher-signed: macOS `.pkg` files have no Developer ID Installer signature/notarization, and Windows installers have no Authenticode publisher signature. OS approval warnings can still appear. The macOS application retains its ad-hoc signature.
 
+
+### 🧳 Portable downloads
+
+Archives are named `mcp-connect-<platform>-<architecture>-portable.zip` (macOS/Windows) or `-portable.tar.gz` (Linux). Choose `portable` for running without an installer; choose `.pkg`, `-setup.exe` or `.deb` for standard installation. In download filenames, `darwin` means macOS.
+
+Portable describes the application files: profiles and credentials still use this computer's configuration folder and OS vault. They do not travel with the archive or a USB drive. Keep the extracted app in a permanent location before connecting clients.
+
 ### 🖼️ Application icons
 
 The logo is embedded in the macOS `.app` and Windows `.exe`. The Linux `.deb` installs the icon and launcher automatically. For a **portable Linux archive**, install the included files before configuring connections:

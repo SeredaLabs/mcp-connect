@@ -55,7 +55,7 @@ PLIST
   cp THIRD_PARTY_NOTICES.txt "$bundle/Contents/Resources/THIRD_PARTY_NOTICES.txt"
   cp docs/INSTALL.uk.md "$bundle/Contents/Resources/README.uk.md"
   codesign --force --deep --sign - "$bundle"
-  ditto -c -k --sequesterRsrc --keepParent "$bundle" "dist/mcp-connect-${platform}-${arch}.zip"
+  ditto -c -k --sequesterRsrc --keepParent "$bundle" "dist/mcp-connect-${platform}-${arch}-portable.zip"
 else
   suffix=""; if [ "$platform" = windows ]; then suffix=.exe; fi
   # Keep the Windows console subsystem: MCP stdio must remain usable.
@@ -65,9 +65,9 @@ else
     cp LICENSE "$out/LICENSE.txt"
     cp THIRD_PARTY_NOTICES.txt "$out/THIRD_PARTY_NOTICES.txt"
     if command -v 7z >/dev/null 2>&1; then
-      (cd "$out" && 7z a -tzip "../mcp-connect-${platform}-${arch}.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt" "THIRD_PARTY_NOTICES.txt")
+      (cd "$out" && 7z a -tzip "../mcp-connect-${platform}-${arch}-portable.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt" "THIRD_PARTY_NOTICES.txt")
     elif command -v zip >/dev/null 2>&1; then
-      (cd "$out" && zip -q "../mcp-connect-${platform}-${arch}.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt" "THIRD_PARTY_NOTICES.txt")
+      (cd "$out" && zip -q "../mcp-connect-${platform}-${arch}-portable.zip" "mcp-connect.exe" "README.uk.md" "LICENSE.txt" "THIRD_PARTY_NOTICES.txt")
     else
       echo "ZIP packager missing: install 7-Zip or zip" >&2
       exit 1
@@ -78,6 +78,6 @@ else
     cp THIRD_PARTY_NOTICES.txt "$out/THIRD_PARTY_NOTICES.txt"
     cp assets/icon.png "$out/icon.png"
     cp assets/mcp-connect.desktop "$out/mcp-connect.desktop"
-    tar -czf "dist/mcp-connect-${platform}-${arch}.tar.gz" -C "$out" mcp-connect README.uk.md LICENSE.txt THIRD_PARTY_NOTICES.txt icon.png mcp-connect.desktop
+    tar -czf "dist/mcp-connect-${platform}-${arch}-portable.tar.gz" -C "$out" mcp-connect README.uk.md LICENSE.txt THIRD_PARTY_NOTICES.txt icon.png mcp-connect.desktop
   fi
 fi
