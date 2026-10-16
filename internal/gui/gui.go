@@ -676,10 +676,10 @@ func Run(store *core.Store) error {
 		docs := widget.NewHyperlink("Documentation", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs/mcp-connect"})
 		maintenance := widget.NewLabel(fmt.Sprintf("Saved connections with integrations enabled: %d.\n\nClose the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active))
 		maintenance.Wrapping = fyne.TextWrapWord
-		content := container.NewVBox(identity, widget.NewLabel("Made & designed by"), credit, docs,
+		content := container.NewVBox(identity, container.NewHBox(widget.NewLabel("Made & designed by"), credit), docs,
 			widget.NewAccordion(widget.NewAccordionItem("Moving, updating & removing", maintenance)))
 		popup := dialog.NewCustom("About MCP Connect", "Close", container.NewVScroll(content), w)
-		popup.Resize(fyne.NewSize(520, 340))
+		popup.Resize(fyne.NewSize(520, 360))
 		popup.Show()
 	})
 	aboutButton.Importance = widget.LowImportance
