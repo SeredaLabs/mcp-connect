@@ -38,3 +38,6 @@ __pycache__/
 
 # Generated Windows icon resources
 *.syso
+
+# Local update preferences
+updates.json

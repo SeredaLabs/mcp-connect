@@ -679,6 +679,7 @@ func Run(store *core.Store) error {
 	logo := canvas.NewImageFromResource(brandIcon)
 	logo.FillMode = canvas.ImageFillContain
 	logo.SetMinSize(fyne.NewSize(24, 24))
+	updates := newUpdateControls(a, w, store.Dir, func() bool { return busy }, setBusy)
 	aboutButton := widget.NewButtonWithIcon("", theme.InfoIcon(), func() {
 		active := 0
 		for _, c := range connections {
@@ -696,10 +697,10 @@ func Run(store *core.Store) error {
 		docs := widget.NewHyperlink("Documentation", &url.URL{Scheme: "https", Host: "github.com", Path: "/SeredaLabs/mcp-connect"})
 		maintenance := widget.NewLabel(fmt.Sprintf("Saved connections with integrations enabled: %d.\n\nClose the app and existing client sessions before updating. Disconnect each connection before uninstalling. After moving the app or switching from a portable copy, use Save & Connect from its permanent location to repair adapter paths. Uninstalling preserves profiles and vault secrets; Delete in the app removes a saved connection and its secret.", active))
 		maintenance.Wrapping = fyne.TextWrapWord
-		content := container.NewVBox(identity, container.NewHBox(widget.NewLabel("Made & designed by"), credit), docs,
+		content := container.NewVBox(identity, updates.aboutContent(), widget.NewSeparator(), container.NewHBox(widget.NewLabel("Made & designed by"), credit), docs,
 			widget.NewAccordion(widget.NewAccordionItem("Moving, updating & removing", maintenance)))
 		popup := dialog.NewCustom("About MCP Connect", "Close", container.NewVScroll(content), w)
-		popup.Resize(fyne.NewSize(520, 360))
+		popup.Resize(fyne.NewSize(560, 480))
 		popup.Show()
 	})
 	aboutButton.Importance = widget.LowImportance
@@ -716,7 +717,7 @@ func Run(store *core.Store) error {
 		return container.New(layout.NewCustomPaddedLayout(0, 0, a.Settings().Theme().Size(theme.SizeNameInnerPadding), a.Settings().Theme().Size(theme.SizeNameInnerPadding)), text)
 	}
 	credits := container.NewVBox(creditLine(versionNote), creditLine(signature), author)
-	sidebarFooter := container.NewVBox(add, spacer(4), credits)
+	sidebarFooter := container.NewVBox(add, updates.sidebar, spacer(4), credits)
 	sidebar := pad(container.NewBorder(sidebarTop, sidebarFooter, nil, nil, list), 12)
 
 	shell := container.New(&shellLayout{}, sidebar, right)
@@ -736,6 +737,9 @@ func Run(store *core.Store) error {
 		w.SetCloseIntercept(nil)
 		w.Close()
 	})
+	if updates.auto.Checked {
+		updates.checkNow()
+	}
 	w.ShowAndRun()
 	return nil
 }
