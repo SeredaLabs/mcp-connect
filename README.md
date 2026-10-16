@@ -13,9 +13,7 @@
 
 MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP servers. Enter your server and credentials, choose your apps, and connect. Secrets stay in your operating system's secure store; the client starts the adapter when needed.
 
-**Use the app:** [Download](https://github.com/SeredaLabs/mcp-connect/releases) · [Setup](#get-connected) · [Authentication](docs/AUTHENTICATION.md)
-
-**[⬇ Download for your computer](https://seredalabs.github.io/mcp-connect/)**
+**Use the app:** [⬇ Download](https://seredalabs.github.io/mcp-connect/) · [Setup](#get-connected) · [Authentication](docs/AUTHENTICATION.md)
 
 **Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md)
 
