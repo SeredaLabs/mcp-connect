@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.6%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.7%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -40,8 +40,8 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 
 ## 🔌 Get connected
 
-1. Download the package for your OS and processor from [Releases](https://github.com/SeredaLabs/mcp-connect/releases).
-2. Extract it into a permanent location and open **MCP Connect**.
+1. Download the installer for your OS and processor from [Releases](https://github.com/SeredaLabs/mcp-connect/releases).
+2. Install it and open **MCP Connect** from Applications or your application menu. For a portable archive, extract it to a permanent location first.
 3. Enter a connection name and the final **HTTPS MCP endpoint**.
 4. Choose an authentication method and enter your credentials locally.
 5. Select your installed clients, then **Test Connection** and **Save & Connect**.
@@ -68,15 +68,31 @@ Each client has its own OS support and availability. The ChatGPT integration nee
 
 | Platform | Processor | Package |
 |---|---|---|
-| macOS 13+ | Apple Silicon / Intel | `.app` in ZIP |
-| Windows | AMD64 / ARM64 | `.exe` in ZIP |
-| Linux desktop | AMD64 / ARM64 | `.tar.gz` |
+| macOS 13+ | Apple Silicon / Intel | `.pkg` installer or `.app` in ZIP |
+| Windows | AMD64 / ARM64 | `-setup.exe` installer or portable ZIP |
+| Linux desktop | AMD64 / ARM64 | `.deb` installer or `.tar.gz` |
 
 A graphical session and OpenGL 2.1 compatible graphics drivers are required. Linux packages target Ubuntu 24.04 and need OpenGL/Wayland/X11 libraries, D-Bus and an unlocked Secret Service provider such as GNOME Keyring. Other distributions may need additional desktop libraries.
 
+### 📦 Standard installation
+
+| Installer | Destination | Shortcuts and removal |
+|---|---|---|
+| macOS `.pkg` | `/Applications/MCP Connect.app` | Applications; remove the app after disconnecting integrations |
+| Windows `-setup.exe` | `%LOCALAPPDATA%\Programs\MCP Connect` | Start menu, optional desktop shortcut, Windows Installed apps |
+| Linux `.deb` | `/opt/mcp-connect` | Application menu and `mcp-connect` command; remove through the package manager |
+
+Install before setting up connections. macOS and Linux installers require administrator approval; Windows installs for the current user without elevation. Installers copy the app and shortcuts; they do not enter credentials, configure MCP clients, or install AI clients.
+
+On Ubuntu 24.04 or a compatible system, open the `.deb` in your software installer or run `sudo apt install ./mcp-connect-linux-amd64.deb` (use the ARM64 file on ARM systems). Other Linux distributions can use the archive with compatible desktop libraries.
+
+Before updating or uninstalling, close the app and MCP client sessions. Disconnect integrations before uninstalling. Profiles and vault secrets are preserved; use **Delete** in the app to remove a saved connection and its secret. Moving from a portable copy requires **Save & Connect** once from the installed copy to update adapter paths.
+
+Installers are not publisher-signed: macOS `.pkg` files have no Developer ID Installer signature/notarization, and Windows installers have no Authenticode publisher signature. OS approval warnings can still appear. The macOS application retains its ad-hoc signature.
+
 ### 🖼️ Application icons
 
-The logo is embedded in the macOS `.app` and Windows `.exe`. Linux packages include `icon.png` and a desktop launcher. From the extracted Linux folder, install them before configuring connections:
+The logo is embedded in the macOS `.app` and Windows `.exe`. The Linux `.deb` installs the icon and launcher automatically. For a **portable Linux archive**, install the included files before configuring connections:
 
 ```sh
 install -Dm755 mcp-connect "$HOME/.local/bin/mcp-connect"

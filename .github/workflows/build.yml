@@ -80,18 +80,60 @@ jobs:
         env:
           CGO_ENABLED: '1'
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+      - name: Windows installer compiler
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: ./scripts/setup-inno.ps1
       - name: Build and package
         shell: bash
         env:
           CGO_ENABLED: '1'
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-        run: ./scripts/build.sh
+        run: |
+          ./scripts/build.sh
+          ./scripts/package-installer.sh
+      - name: Check installed macOS package
+        if: matrix.os == 'darwin'
+        shell: bash
+        run: |
+          sudo installer -pkg "dist/mcp-connect-darwin-${{ matrix.arch }}-installer.pkg" -target /
+          codesign --verify --deep --strict '/Applications/MCP Connect.app'
+          test "$(/Applications/'MCP Connect.app'/Contents/MacOS/mcp-connect version)" = "$(sed -n 's/^const Version = "\([0-9.]*\)"/\1/p' internal/core/store.go)"
+      - name: Check installed Linux package
+        if: matrix.os == 'linux'
+        shell: bash
+        run: |
+          sudo apt-get install -y "./dist/mcp-connect-linux-${{ matrix.arch }}.deb"
+          test "$(mcp-connect version)" = "$(sed -n 's/^const Version = "\([0-9.]*\)"/\1/p' internal/core/store.go)"
+          test -f /usr/share/applications/mcp-connect.desktop
+          test -f /usr/share/icons/hicolor/512x512/apps/mcp-connect.png
+          sudo apt-get remove -y mcp-connect
+          test ! -e /opt/mcp-connect/mcp-connect
+      - name: Check Windows installation and removal
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $installer = Resolve-Path "dist/mcp-connect-windows-${{ matrix.arch }}-setup.exe"
+          $process = Start-Process $installer -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Installation failed: $($process.ExitCode)" }
+          $folder = Join-Path $env:LOCALAPPDATA 'Programs\MCP Connect'
+          $binary = Join-Path $folder 'mcp-connect.exe'
+          $version = (Select-String '^const Version = "([0-9.]+)"' internal/core/store.go).Matches.Groups[1].Value
+          if ((& $binary version) -ne $version) { throw 'Installed version mismatch' }
+          $shortcut = Join-Path ([Environment]::GetFolderPath('Programs')) 'MCP Connect.lnk'
+          if (-not (Test-Path $shortcut)) { throw 'Start menu shortcut missing' }
+          $process = Start-Process (Join-Path $folder 'unins000.exe') -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART' -Wait -PassThru
+          if ($process.ExitCode -ne 0) { throw "Removal failed: $($process.ExitCode)" }
+          if ((Test-Path $binary) -or (Test-Path $shortcut)) { throw 'Installed files remain after removal' }
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: mcp-connect-${{ matrix.os }}-${{ matrix.arch }}
           path: |
             dist/*.zip
             dist/*.tar.gz
+            dist/*.pkg
+            dist/*-setup.exe
+            dist/*.deb
           if-no-files-found: error
           retention-days: 1

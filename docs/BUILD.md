@@ -38,3 +38,9 @@ Packages are written to `dist/`. They include the executable or application bund
 The [build workflow](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) compiles six native targets and checks dependency integrity, static analysis and known vulnerabilities. It is not a publisher-signing or notarization service.
 
 Windows packaging generates embedded icon resources with pinned `go-winres v0.3.3`. This build-only tool is downloaded by Go and is not included in the application.
+
+## 📦 Installers
+
+After `bash scripts/build.sh`, run `bash scripts/package-installer.sh` on the target OS. macOS uses built-in `pkgbuild` and `productbuild`; Linux uses `dpkg-deb`; Windows uses Inno Setup 7.1.0 (`ISCC` points to `ISCC.exe`, or `iscc` must be on PATH). The Windows compiler is a build-only tool. CI downloads the official release and checks a pinned SHA-256 digest.
+
+CI checks installation and the installed CLI on all six targets, plus removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.
