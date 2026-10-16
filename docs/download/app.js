@@ -1,6 +1,6 @@
 /* No analytics, fingerprinting or requests to third-party detection services. */
 'use strict';
-const release = '0.4.11';
+const release = '0.4.12';
 const base = `https://github.com/SeredaLabs/mcp-connect/releases/download/v${release}/`;
 const $ = id => document.getElementById(id);
 let uk = /^uk\b/i.test(navigator.language);
