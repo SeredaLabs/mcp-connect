@@ -20,7 +20,7 @@
 Для Ubuntu встановіть:
 
 ```sh
-sudo apt-get install build-essential libgl1-mesa-dev libegl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
+sudo apt-get install build-essential dpkg-dev libgl1-mesa-dev libegl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
 ```
 
 ## 🛠️ Збирання
@@ -31,7 +31,7 @@ bash scripts/build.sh
 
 Пакунки зберігаються в `dist/`. До них входять виконуваний файл або `.app`, українська інструкція, ліцензія програми та повідомлення про ліцензії залежностей.
 
-[Процес збирання](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) створює шість пакунків на відповідних ОС і перевіряє цілісність залежностей, статичний аналіз та відомі вразливості. Він не виконує підписування видавцем чи нотаризацію.
+[Процес збирання](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) збирає шість цільових платформ на відповідних ОС: для кожної створює portable-архів та установник, загалом 12 пакунків. Також перевіряє цілісність залежностей, статичний аналіз та відомі вразливості. Він не виконує підписування видавцем чи нотаризацію.
 
 Пакування Windows створює вбудовану іконку через `go-winres v0.3.3`. Цей інструмент завантажується Go лише для збирання й не входить до програми.
 

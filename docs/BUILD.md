@@ -22,7 +22,7 @@ Windows builds need `7z` or `zip` on PATH. Set `CC` to the full path of the appr
 For Ubuntu, install:
 
 ```sh
-sudo apt-get install build-essential libgl1-mesa-dev libegl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
+sudo apt-get install build-essential dpkg-dev libgl1-mesa-dev libegl1-mesa-dev xorg-dev libxkbcommon-dev libwayland-dev wayland-protocols
 ```
 
 <a id="build"></a>
@@ -35,7 +35,7 @@ bash scripts/build.sh
 
 Packages are written to `dist/`. They include the executable or application bundle, Ukrainian installation guide, application license and third-party notices.
 
-The [build workflow](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) compiles six native targets and checks dependency integrity, static analysis and known vulnerabilities. It is not a publisher-signing or notarization service.
+The [build workflow](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml) builds six native targets, producing a portable archive and an installer for each (12 packages in total), and checks dependency integrity, static analysis and known vulnerabilities. It is not a publisher-signing or notarization service.
 
 Windows packaging generates embedded icon resources with pinned `go-winres v0.3.3`. This build-only tool is downloaded by Go and is not included in the application.
 

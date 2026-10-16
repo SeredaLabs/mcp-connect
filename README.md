@@ -25,6 +25,8 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 Connection profiles → login & password / Bearer token / API key → AI client selection. The GIF loops automatically; server addresses and credential fields are blurred. Demonstration data only, without a live server connection.
 
+The demo was recorded with version 0.4.4. Version 0.4.9 has an updated icon and separate **About MCP Connect** and **How to connect** dialogs.
+
 [▶ Watch or download the full MP4 demo](assets/demo/mcp-connect-demo.mp4)
 
 <a id="why-mcp-connect"></a>
@@ -47,7 +49,7 @@ Connection profiles → login & password / Bearer token / API key → AI client 
 5. Select your installed clients, then **Test Connection** and **Save & Connect**.
 6. Restart the clients and start a new chat.
 
-**Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance. **How to connect** beside **Connect your apps** explains client setup. The **ⓘ About** button beside the app name contains the version, author, documentation and app-maintenance guidance.
+**Test Connection** checks the MCP handshake and lists tools without invoking business tools. Click a client status badge to open its settings or setup guidance. **How to connect** beside **Connect your apps** explains client setup. The **ⓘ** button beside the app name opens **About MCP Connect**, with the version, author, documentation and app-maintenance guidance.
 
 <a id="supported-clients"></a>
 
@@ -136,7 +138,7 @@ Use a separate server account with minimum permissions. MCP Connect does not cha
 
 ## 🧪 Preview release
 
-The first public release is intended for developers and early testers. macOS packages are ad-hoc signed without Developer ID notarization; Windows packages have no publisher signature. OS publisher warnings may appear.
+This preview is intended for developers and early testers. The macOS application is ad-hoc signed; PKG installers are unsigned and not notarized. Windows applications and installers have no publisher signature. OS publisher warnings may appear.
 
 Native builds and automated checks do not establish compatibility with every desktop environment or AI-client version. The Apple Silicon interface has been checked on a physical Mac; Linux on both architectures and Windows AMD64 have passed graphical startup checks (Windows used CI-only software OpenGL). Windows ARM64 is experimental: its adapter and credential store passed checks, but its graphical startup and a physical Intel Mac still need confirmation.
 

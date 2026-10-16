@@ -10,4 +10,4 @@ HTTPS certificate validation stays enabled. Redirects and cross-origin requests 
 
 Your OS account, the AI client's tool approvals and the remote server's permissions remain security boundaries. The utility is not a sandbox, a read-only proxy or an authorization service. A process allowed to use your connection can access the tools that your server account permits. Existing client sessions must be stopped to revoke their active adapter processes.
 
-Only the latest release receives fixes. Preview packages are not publisher-signed/notarized. Automated checks and known-vulnerability scans are not a security certification.
+Only the latest release receives fixes. Preview packages are not publisher-signed/notarized. The macOS application has an ad-hoc signature only, not a Developer ID signature. Automated checks and known-vulnerability scans are not a security certification.
