@@ -1,8 +1,28 @@
 # Client integration adapters
 
+🌐 **English** · [Українська](INTEGRATIONS.uk.md)
+
+[← Overview](../README.md) · [Build and validation](BUILD.md) · [Security](../SECURITY.md)
+
 MCP Connect registers clients through small adapters in `internal/core`. The
 coordinator does not parse vendor configuration, construct vendor commands or
 choose registration mechanisms. Profile flags and stable IDs remain unchanged.
+
+Here, a client adapter manages local registration. The `mcp-connect serve <profile-ID>` process is the separate runtime transport started by an AI client; its authentication, vault access and recovery behavior are outside this refactor.
+
+## Operation contract
+
+```go
+type ClientAdapter interface {
+    ID() string
+    Read(id string) (Registration, bool, error)
+    Set(context.Context, RegistrationRequest) error
+    Detect() string
+    Settings(id string) (ClientSettings, error)
+}
+```
+
+The [contract source](../internal/core/client_adapter.go) defines normalized registration data and application intent. No shared type exposes a TOML table, plugin manifest or vendor-specific CLI flag. `Detect` locates a client; `Settings` supplies presentation data; `Read` and `Set` inspect and apply registrations. `Set` must preserve external entries and verify the requested result before reporting success.
 
 ## Boundaries
 
@@ -79,14 +99,15 @@ transport, authentication, vault and remote-session formats are unaffected.
 | Codex configuration format | Codex adapter/backend and its fixtures/tests |
 | Additional client | New adapter/tests, explicit composition and UI/profile selection exposure |
 
+Isolation applies while the common integration contract remains applicable.
+
 Existing adapters and the coordinator need no new registration dispatch branch
 for an additional client. Adding persisted selection for a future client still
 requires an explicit storage/UI decision; this refactor does not redesign profiles.
 
 ## Local validation
 
-This repository keeps `*_test.go` files local and ignored, as documented in
-`.local/README.md`. Do not force-add them. The adapter-specific test files own
+This repository keeps `*_test.go` files local and ignored (see [`.gitignore`](../.gitignore) and the local development instructions in `.local/README.md`). A public clone does not contain this test suite, and native CI runs package/static checks rather than these local tests. Do not force-add them. The adapter-specific test files own
 configuration/CLI fixtures; the shared contract suite uses only normalized
 operations. ChatGPT's contract fixture substitutes backend operations, so it does
 not depend on Codex's TOML representation. Existing end-to-end regression tests
@@ -97,3 +118,12 @@ Installed CLI tests require `ONECMCP_TEST_CLIENT_CLIS=1`; they override client
 homes/configuration with temporary directories and must not use real profiles.
 Cross-compilation verifies Go source compatibility only, not native desktop startup,
 installation or behavior on another operating system.
+
+## Adding a client
+
+1. Implement the operation contract in a focused adapter and keep its formats, commands, detection and compatibility checks there.
+2. Add adapter-specific fixtures and run the shared behavioral contract suite.
+3. Add an explicit binding in `client_defaults.go`, including its stable ID, name and selection predicate; expose the choice in the GUI. If the choice needs persistence, decide its profile field explicitly.
+4. Verify independent apply/retry failures and preservation of existing client registrations. Do not add a vendor dispatch branch to `Integrator`.
+
+For the current release, [0.4.13 native CI](https://github.com/SeredaLabs/mcp-connect/actions/runs/39031665077) passed all six package/upgrade targets. Local tests separately exercised the contract suite, installed client CLIs, GUI and macOS vault, including the race detector. Unknown upstream versions still remain `unknown`.

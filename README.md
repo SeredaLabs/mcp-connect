@@ -17,6 +17,10 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 **Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md) · [Client integration architecture](docs/INTEGRATIONS.md)
 
+## 🆕 Current release
+
+[**0.4.13 Preview**](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.13) separates the four client integrations into independent adapters. Profile formats, registration IDs, Save & Apply and per-client Retry remain compatible. Existing connections do not need to be recreated. See [updates](docs/UPDATES.md) for installation and [integration architecture](docs/INTEGRATIONS.md) for the developer contract.
+
 <a id="see-it-in-action"></a>
 
 ## 🎬 See it in action
@@ -25,7 +29,7 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 Connection profiles → login & password / Bearer token / API key → AI client selection. The GIF loops automatically; server addresses and credential fields are blurred. Demonstration data only, without a live server connection.
 
-The demo was recorded with version 0.4.4. Version 0.4.11 has an updated icon and separate **About MCP Connect** and **How to connect** dialogs.
+The demo was recorded with version 0.4.4. The current interface has an updated icon, separate **About MCP Connect** and **How to connect** dialogs, per-client Retry, aligned registration badges and hints on hover.
 
 [▶ Watch or download the full MP4 demo](assets/demo/mcp-connect-demo.mp4)
 
@@ -63,7 +67,7 @@ The demo was recorded with version 0.4.4. Version 0.4.11 has an updated icon and
 | Anthropic | Claude Desktop | Local desktop MCP configuration |
 | Anthropic | Claude Code | Local MCP registration through its installed CLI |
 
-Each client has its own OS support and availability. The ChatGPT integration needs a compatible bundled or installed Codex CLI. A local plugin does not automatically appear in ordinary browser or mobile chats.
+Each client has its own OS support and availability. The ChatGPT integration needs a compatible bundled or installed Codex CLI. AI clients are installed separately; an npm-installed client CLI may need Node even though MCP Connect itself does not. A local plugin does not automatically appear in ordinary browser or mobile chats.
 
 <a id="platforms"></a>
 
@@ -121,9 +125,16 @@ install -Dm644 mcp-connect.desktop "$HOME/.local/share/applications/mcp-connect.
 | **Registered** · blue | Local registration exists; restart the client to load it |
 | **Verified** · green | The last explicit server check succeeded |
 | **Test required** · amber | Settings changed or need checking |
-| **Not registered** · grey | No direct registration exists |
-| **Will be added / removed** · amber | A client choice has not been applied |
-| **Needs attention / Cleanup needed** | Use the client's Retry button or open Details |
+| **Not registered** · grey or amber | No direct registration exists; amber when the client is selected |
+| **Via OpenAI plugin** · blue | Codex sees the shared plugin without a direct entry |
+| **Repair needed** · amber | The registration points to a different application path; use Save & Apply |
+| **Disabled in client** · amber | The entry exists but is disabled in the client's configuration |
+| **Will be added / Will be removed** · amber | A client choice has not been applied |
+| **Registered · will remove** · amber | An existing entry is not selected; applying will remove it |
+| **Needs attention** · red | The last client action failed; open Details and use Retry |
+| **Check settings** · red | Configuration inspection failed or found an external entry |
+| **Cleanup needed** · amber | The profile is disabled but a client entry remains; retry cleanup |
+| **Disabled** · grey | The saved profile is inactive; new adapter sessions are blocked |
 
 Checkboxes select where to register a server; changes take effect only with **Save & Apply**. Status badges report registration separately from the last server check. Changing only client choices or the profile name does not contact the MCP server or read credentials. New endpoints and credential changes are checked before saving. Failed client actions have an individual **Retry** button; successful actions are retained. Details shows each client's result.
 
@@ -131,7 +142,7 @@ Codex keeps a direct MCP registration for local app, CLI and IDE use. ChatGPT De
 
 **Disconnect** disables the saved profile before removing client entries. If cleanup fails, new adapter sessions remain blocked and cleanup can be retried. Existing sessions must still be closed. Unchecking every client on an existing profile and applying also disables it. Unsaved edits are protected by a discard prompt when switching profiles or closing.
 
-Indicators are not continuous monitoring. Restart clients to end existing adapter sessions after disconnecting.
+Indicators are not continuous monitoring. **Registered** does not confirm that the client has loaded tools, and **Verified** does not certify the AI-client version. Restart clients to end existing adapter sessions after disconnecting.
 
 <a id="credentials-and-security"></a>
 
@@ -149,7 +160,9 @@ Use a separate server account with minimum permissions. MCP Connect does not cha
 
 This preview is intended for developers and early testers. The macOS application is ad-hoc signed; PKG installers are unsigned and not notarized. Windows applications and installers have no publisher signature. OS publisher warnings may appear.
 
-Native builds and automated checks do not establish compatibility with every desktop environment or AI-client version. The Apple Silicon interface has been checked on a physical Mac; Linux on both architectures and Windows AMD64 have passed graphical startup checks (Windows used CI-only software OpenGL). Windows ARM64 is experimental: its adapter and credential store passed checks, but its graphical startup and a physical Intel Mac still need confirmation.
+For 0.4.13, [native CI passed on all six targets](https://github.com/SeredaLabs/mcp-connect/actions/runs/39031665077): package builds, dependency checks, installed upgrades from 0.4.12, installed CLI version checks and Windows/Linux removal checks. Local tests also covered the GUI, client adapters, installed client CLIs and macOS Keychain, including the race detector.
+
+These checks do not certify manual graphical operation on every platform or compatibility with every AI-client version. Graphical startup checks from earlier releases are historical evidence, not a fresh GUI validation of 0.4.13. Windows ARM64 graphical support remains experimental; physical Intel Mac and macOS 13 GUI behavior still need confirmation.
 
 <a id="license-and-author"></a>
 

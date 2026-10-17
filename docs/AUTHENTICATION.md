@@ -26,6 +26,8 @@ An unavailable or locked vault causes an error; there is no plaintext fallback. 
 
 Empty credential fields reuse a saved secret only when its endpoint, authentication method and API-key header match. Changing these requires re-entry. Older records without an endpoint binding must be explicitly re-entered and saved.
 
+Changing only the profile name or client choices uses **Save & Apply** without reading vault credentials or contacting the MCP server. Endpoint or credential changes are checked before saving.
+
 On macOS, Keychain access depends on the executable and its signing identity. A new ad-hoc signed build may ask for permission again.
 
 <a id="tokens-and-permissions"></a>

@@ -44,3 +44,22 @@ Windows packaging generates embedded icon resources with pinned `go-winres v0.3.
 After `bash scripts/build.sh`, run `bash scripts/package-installer.sh` on the target OS. macOS uses built-in `pkgbuild` and `productbuild`; Linux uses `dpkg-deb`; Windows uses Inno Setup 7.1.0 (`ISCC` points to `ISCC.exe`, or `iscc` must be on PATH). The Windows compiler is a build-only tool. CI downloads the official release and checks a pinned SHA-256 digest.
 
 CI installs 0.4.12, upgrades it to the current build on all six targets, checks the installed CLI, and verifies removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.
+
+## Validation and integration changes
+
+The [0.4.13 native run](https://github.com/SeredaLabs/mcp-connect/actions/runs/39031665077) passed on all six targets. These are package, upgrade and installed CLI checks, not manual GUI certification.
+
+With the local development tests available, run:
+
+```sh
+go test ./...
+go test -race ./...
+go vet ./...
+go mod verify
+```
+
+The public repository ignores `*_test.go` and `.local/` in [`.gitignore`](../.gitignore). A fresh public clone therefore does not include the local test suite, and the published build workflow does not run it. Do not interpret `go test` with no test files as execution of the adapter contract tests.
+
+Installed-client tests require `ONECMCP_TEST_CLIENT_CLIS=1` and use temporary client homes/configurations. Native-vault tests require `ONECMCP_TEST_NATIVE_VAULT=1` and create/remove synthetic credential records. Both are explicit local opt-ins; client CLIs and an available OS vault are required respectively.
+
+Before changing a client integration, read [the adapter contract and boundaries](INTEGRATIONS.md). Vendor commands, formats, paths and fixtures belong to the affected adapter. The coordinator, GUI and profile format should remain unaffected when the common contract still applies.

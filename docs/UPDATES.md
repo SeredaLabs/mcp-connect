@@ -4,6 +4,10 @@
 
 [← Overview](../README.md) · [Security](../SECURITY.md)
 
+## Updating to 0.4.13
+
+[0.4.13 Preview](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.13) preserves existing profiles, credentials and registration IDs. The adapter refactor needs no manual data migration or recreation of connections. The 0.4.12 updater was verified to detect the published 0.4.13 release. If the executable stays at the same installed path, no registration repair is needed; after a path change, use **Save & Apply**.
+
 ## 🖥️ In the app
 
 Starting with **0.4.11**, MCP Connect checks public GitHub releases once when it starts. A blue **Update · v…** button appears in the sidebar when a newer version is available. You can also open **ⓘ → About MCP Connect → Check for updates**.
