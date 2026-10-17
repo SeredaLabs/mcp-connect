@@ -6,56 +6,30 @@ import (
 	"strings"
 )
 
-// ClientIDs is the order used for applying and reporting independent integrations.
-var ClientIDs = []string{"codex", "chatgpt", "claude", "claude-desktop"}
-
-func ClientName(id string) string {
-	switch id {
-	case "codex":
-		return "Codex"
-	case "chatgpt":
-		return "ChatGPT Desktop"
-	case "claude":
-		return "Claude Code"
-	case "claude-desktop":
-		return "Claude Desktop"
-	}
-	return id
-}
-
-func (c Connection) WantsClient(id string) bool {
-	switch id {
-	case "codex":
-		return c.Codex
-	case "chatgpt":
-		return c.ChatGPT
-	case "claude":
-		return c.Claude
-	case "claude-desktop":
-		return c.ClaudeDesktop
-	}
-	return false
-}
-
 type ClientState struct {
-	Registered bool
-	Shared     bool
-	Disabled   bool
-	Repair     bool
-	Err        error
+	Compatibility ClientCompatibility
+	Registered    bool
+	Shared        bool
+	Disabled      bool
+	Repair        bool
+	Err           error
 }
 
 // Inspect reports registration, not a live connection or tool availability.
 func (i *Integrator) Inspect(client, id string) ClientState {
-	r, exists, err := i.Read(client, id)
-	s := ClientState{Err: err}
+	a, err := i.adapter(client)
+	if err != nil {
+		return ClientState{Err: err}
+	}
+	r, exists, err := a.Read(id)
+	s := ClientState{Err: err, Compatibility: CompatibilityUnknown}
 	if err != nil {
 		return s
 	}
-	if client == "codex" {
-		_, shared, sharedErr := i.readChatGPT(id)
-		if sharedErr == nil {
-			s.Shared = shared
+	if shared, ok := a.(sharedRegistration); ok {
+		_, present, err := shared.ReadShared(id)
+		if err == nil {
+			s.Shared = present
 		}
 	}
 	if !exists {
@@ -71,8 +45,15 @@ func (i *Integrator) Inspect(client, id string) ClientState {
 	return s
 }
 
+// Registration verification is not certification of an upstream client version.
+// Unknown versions remain unknown even when a known config shape can be read.
+type ClientCompatibility string
+
+const CompatibilityUnknown ClientCompatibility = "unknown"
+
 type ClientResult struct {
 	Client string
+	name   string
 	On     bool
 	Err    error
 }
@@ -93,7 +74,11 @@ func (r ApplyReport) Err() error {
 	var messages []string
 	for _, result := range r {
 		if result.Err != nil {
-			messages = append(messages, ClientName(result.Client)+": "+result.Err.Error())
+			name := result.name
+			if name == "" {
+				name = ClientName(result.Client)
+			}
+			messages = append(messages, name+": "+result.Err.Error())
 		}
 	}
 	if len(messages) == 0 {
@@ -102,22 +87,25 @@ func (r ApplyReport) Err() error {
 	return errors.New(strings.Join(messages, "\n"))
 }
 
-// Apply retries only the requested clients when a subset is supplied. A plugin
-// failure never removes or prevents an independent direct Codex registration.
+// Apply retries only the requested clients when a subset is supplied. Failures
+// never remove or prevent successful independent registrations.
 func (i *Integrator) Apply(ctx context.Context, c Connection, clients ...string) ApplyReport {
-	if len(clients) == 0 {
-		clients = ClientIDs
+	if i.Clients == nil {
+		return ApplyReport{{Err: errors.New("Client registry unavailable")}}
 	}
-	copyIntegrator := *i
-	copyIntegrator.DisplayName = c.Name
+	if len(clients) == 0 {
+		clients = i.Clients.IDs()
+	}
 	var report ApplyReport
 	for _, client := range clients {
-		if client != "codex" && client != "chatgpt" && client != "claude" && client != "claude-desktop" {
-			report = append(report, ClientResult{Client: client, Err: errors.New("Unknown client")})
+		binding, err := i.Clients.Lookup(client)
+		if err != nil {
+			report = append(report, ClientResult{Client: client, Err: err})
 			continue
 		}
-		on := c.Enabled && c.WantsClient(client)
-		report = append(report, ClientResult{Client: client, On: on, Err: copyIntegrator.Set(ctx, client, c.ID, on)})
+		on := c.Enabled && binding.Selected(c)
+		err = i.set(ctx, client, RegistrationRequest{ID: c.ID, Name: c.Name, Executable: i.Executable, Enabled: on})
+		report = append(report, ClientResult{Client: client, name: binding.Name, On: on, Err: err})
 	}
 	return report
 }

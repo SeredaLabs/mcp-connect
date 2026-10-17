@@ -11,19 +11,12 @@ import (
 // Invoke known npm entrypoints with Node directly. This supports Windows .cmd
 // launchers without cmd.exe, shell expansion or string-built command lines.
 // Native client executables do not need Node.
-func clientCommand(bin string, args []string) (string, []string, error) {
+func clientCommand(bin string, args []string, relative string) (string, []string, error) {
 	ext := strings.ToLower(filepath.Ext(bin))
 	if ext != ".cmd" && ext != ".bat" {
 		return bin, args, nil
 	}
-	name := strings.ToLower(strings.TrimSuffix(filepath.Base(bin), filepath.Ext(bin)))
-	var relative string
-	switch name {
-	case "codex":
-		relative = filepath.Join("@openai", "codex", "bin", "codex.js")
-	case "claude":
-		relative = filepath.Join("@anthropic-ai", "claude-code", "cli.js")
-	default:
+	if relative == "" {
 		return "", nil, errors.New("Unsupported client launcher; use the native client executable")
 	}
 	entry := ""

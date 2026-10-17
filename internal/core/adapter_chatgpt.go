@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/pelletier/go-toml/v2"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -19,55 +19,12 @@ type pluginReceipt struct {
 	InstalledPath string `json:"installed_path"`
 }
 
-func (i *Integrator) pluginHome() string {
-	if i.CodexPath != "" {
-		return filepath.Dir(i.CodexPath)
-	}
-	return filepath.Join(i.Home, ".codex")
-}
-func (i *Integrator) pluginRoot(id string) string {
+func (i *ChatGPTAdapter) pluginHome() string { return i.backend.pluginHome() }
+func (i *ChatGPTAdapter) pluginRoot(id string) string {
 	return filepath.Join(i.pluginHome(), "mcp-connect", "marketplaces", id)
 }
 func pluginMarket(id string) string   { return "mcp-connect-" + id }
 func pluginSelector(id string) string { return id + "@" + pluginMarket(id) }
-func canonicalPath(path string) string {
-	if resolved, err := filepath.EvalSymlinks(path); err == nil {
-		path = resolved
-	}
-	return filepath.Clean(platformLongPath(path))
-}
-func samePath(a, b string) bool {
-	a, b = canonicalPath(a), canonicalPath(b)
-	if runtime.GOOS == "windows" {
-		return strings.EqualFold(a, b)
-	}
-	return a == b
-}
-func (i *Integrator) pluginConfig(id string) (bool, error) {
-	b, e := os.ReadFile(i.CodexPath)
-	if os.IsNotExist(e) || i.CodexPath == "" {
-		return false, nil
-	}
-	if e != nil {
-		return false, errors.New("Cannot read OpenAI configuration")
-	}
-	var doc struct {
-		Marketplaces map[string]struct {
-			Source     string `toml:"source"`
-			SourceType string `toml:"source_type"`
-		} `toml:"marketplaces"`
-		Plugins map[string]struct {
-			Enabled bool `toml:"enabled"`
-		} `toml:"plugins"`
-	}
-	if toml.Unmarshal(b, &doc) != nil {
-		return false, errors.New("OpenAI configuration is invalid; nothing changed")
-	}
-	if m, ok := doc.Marketplaces[pluginMarket(id)]; ok && (m.SourceType != "local" || !samePath(m.Source, i.pluginRoot(id))) {
-		return false, errors.New("Name conflict — external OpenAI marketplace")
-	}
-	return doc.Plugins[pluginSelector(id)].Enabled, nil
-}
 func readPluginMCP(path, id string) (Registration, bool, error) {
 	b, e := os.ReadFile(path)
 	if os.IsNotExist(e) {
@@ -77,7 +34,7 @@ func readPluginMCP(path, id string) (Registration, bool, error) {
 		return Registration{}, false, errors.New("Cannot read local plugin")
 	}
 	var doc struct {
-		Servers map[string]Registration `json:"mcpServers"`
+		Servers map[string]pluginRegistration `json:"mcpServers"`
 	}
 	if json.Unmarshal(b, &doc) != nil {
 		return Registration{}, false, errors.New("Local plugin configuration is invalid")
@@ -86,12 +43,12 @@ func readPluginMCP(path, id string) (Registration, bool, error) {
 		return Registration{}, false, errors.New("Local plugin has unexpected MCP entries")
 	}
 	r, ok := doc.Servers[id]
-	if ok && !owned(r, id) {
-		return r, ok, errors.New("Name conflict — external plugin server")
+	if ok && !owned(Registration(r), id) {
+		return Registration(r), ok, errors.New("Name conflict — external plugin server")
 	}
-	return r, ok, nil
+	return Registration(r), ok, nil
 }
-func (i *Integrator) pluginOwner(id string) (pluginReceipt, bool, error) {
+func (i *ChatGPTAdapter) pluginOwner(id string) (pluginReceipt, bool, error) {
 	path := filepath.Join(i.pluginRoot(id), "owner.json")
 	b, e := os.ReadFile(path)
 	if os.IsNotExist(e) {
@@ -118,12 +75,15 @@ func (i *Integrator) pluginOwner(id string) (pluginReceipt, bool, error) {
 	}
 	return receipt, true, nil
 }
-func (i *Integrator) readChatGPT(id string) (Registration, bool, error) {
+func (i *ChatGPTAdapter) Read(id string) (Registration, bool, error) {
+	if !idPattern.MatchString(id) {
+		return Registration{}, false, errors.New("Invalid integration ID")
+	}
 	receipt, exists, e := i.pluginOwner(id)
 	if e != nil || !exists {
 		return Registration{}, false, e
 	}
-	enabled, e := i.pluginConfig(id)
+	enabled, e := i.backend.pluginState(pluginMarket(id), pluginSelector(id), i.pluginRoot(id))
 	if e != nil || !enabled {
 		return Registration{}, false, e
 	}
@@ -132,7 +92,7 @@ func (i *Integrator) readChatGPT(id string) (Registration, bool, error) {
 	}
 	return readPluginMCP(filepath.Join(receipt.InstalledPath, ".mcp.json"), id)
 }
-func (i *Integrator) ChatGPTSetupURL(id string) (*url.URL, error) {
+func (i *ChatGPTAdapter) SetupURL(id string) (*url.URL, error) {
 	if !idPattern.MatchString(id) {
 		return nil, errors.New("Invalid connection ID")
 	}
@@ -145,15 +105,20 @@ func (i *Integrator) ChatGPTSetupURL(id string) (*url.URL, error) {
 	u.RawQuery = q.Encode()
 	return u, nil
 }
-func (i *Integrator) setChatGPT(ctx context.Context, id string, on bool) error {
+func (adapter *ChatGPTAdapter) Set(ctx context.Context, request RegistrationRequest) error {
+	i := adapter
+	id, on := request.ID, request.Enabled
 	if !idPattern.MatchString(id) {
 		return errors.New("Invalid connection ID")
+	}
+	if err := i.checkManagedPath(id); err != nil {
+		return err
 	}
 	receipt, exists, e := i.pluginOwner(id)
 	if e != nil {
 		return e
 	}
-	enabled, e := i.pluginConfig(id)
+	enabled, e := i.backend.pluginState(pluginMarket(id), pluginSelector(id), i.pluginRoot(id))
 	if e != nil {
 		return e
 	}
@@ -171,39 +136,36 @@ func (i *Integrator) setChatGPT(ctx context.Context, id string, on bool) error {
 			return errors.New("Owned plugin source was changed; nothing overwritten")
 		}
 	}
-	find := i.Find
+	find := i.host.Find
 	if find == nil {
-		find = FindClient
+		find = func(string) string { return i.backend.Detect() }
 	}
 	bin := find("codex")
 	if bin == "" {
 		return errors.New("ChatGPT setup needs a compatible bundled or installed Codex CLI; update ChatGPT Desktop or install Codex CLI")
 	}
-	if i.Output == nil {
-		return errors.New("Plugin installer unavailable")
-	}
 	ctx, cancel := context.WithTimeout(ctx, 45*time.Second)
 	defer cancel()
 	command := func(args ...string) ([]byte, error) {
-		b, err := i.Output(ctx, bin, args...)
+		b, err := i.backend.pluginOutput(ctx, bin, args...)
 		if err != nil {
 			return nil, errors.New("OpenAI could not update the local plugin; update ChatGPT/Codex and retry")
 		}
 		return b, nil
 	}
 	if !on {
-		if _, ok, err := i.readChatGPT(id); err != nil || !ok {
+		if _, ok, err := i.Read(id); err != nil || !ok {
 			return errors.New("Cannot verify ownership of installed plugin")
 		}
 		if _, err := command("plugin", "remove", pluginSelector(id), "--json"); err != nil {
 			return err
 		}
-		if active, err := i.pluginConfig(id); err != nil || active {
+		if active, err := i.backend.pluginState(pluginMarket(id), pluginSelector(id), i.pluginRoot(id)); err != nil || active {
 			return errors.New("OpenAI plugin removal verification failed")
 		}
 		return nil
 	}
-	if !filepath.IsAbs(i.Executable) {
+	if !filepath.IsAbs(request.Executable) {
 		return errors.New("Application path must be absolute")
 	}
 	root := i.pluginRoot(id)
@@ -230,14 +192,14 @@ func (i *Integrator) setChatGPT(ctx context.Context, id string, on bool) error {
 		return e
 	}
 	displayName := "MCP Connect"
-	if i.DisplayName != "" {
-		displayName = "MCP · " + i.DisplayName
+	if request.Name != "" {
+		displayName = "MCP · " + request.Name
 	}
 	manifest := map[string]any{"name": id, "version": Version, "description": "Secure local MCP access through MCP Connect", "author": map[string]string{"name": "SeredaLabs", "url": "https://github.com/SeredaLabs"}, "mcpServers": "./.mcp.json", "requires_local_executor": true, "interface": map[string]string{"displayName": displayName, "shortDescription": "Use your saved MCP connection on this computer", "developerName": "SeredaLabs", "category": "Productivity"}}
 	if e = write(filepath.Join("plugins", id, ".codex-plugin", "plugin.json"), manifest); e != nil {
 		return e
 	}
-	if e = write(filepath.Join("plugins", id, ".mcp.json"), map[string]any{"mcpServers": map[string]Registration{id: {Command: i.Executable, Args: []string{"serve", id}}}}); e != nil {
+	if e = write(filepath.Join("plugins", id, ".mcp.json"), map[string]any{"mcpServers": map[string]pluginRegistration{id: {Command: request.Executable, Args: []string{"serve", id}}}}); e != nil {
 		return e
 	}
 	marketplace := map[string]any{"name": pluginMarket(id), "interface": map[string]string{"displayName": "MCP Connect"}, "plugins": []any{map[string]any{"name": id, "source": map[string]string{"source": "local", "path": "./plugins/" + id}, "policy": map[string]string{"installation": "AVAILABLE", "authentication": "ON_INSTALL"}, "category": "Productivity"}}}
@@ -262,9 +224,75 @@ func (i *Integrator) setChatGPT(ctx context.Context, id string, on bool) error {
 	if e = write("owner.json", receipt); e != nil {
 		return e
 	}
-	r, ok, e := i.readChatGPT(id)
-	if e != nil || !ok || !samePath(r.Command, i.Executable) {
+	r, ok, e := i.Read(id)
+	if e != nil || !ok || !samePath(r.Command, request.Executable) || (r.Enabled != nil && !*r.Enabled) {
 		return errors.New("Local ChatGPT plugin verification failed")
+	}
+	return nil
+}
+
+type ChatGPTAdapter struct {
+	host    *Integrator
+	backend openAIPluginStore
+}
+
+func NewChatGPTAdapter(host *Integrator, backend openAIPluginStore) *ChatGPTAdapter {
+	return &ChatGPTAdapter{host, backend}
+}
+func (i *ChatGPTAdapter) ID() string { return "chatgpt" }
+func (i *ChatGPTAdapter) Detect() string {
+	home, _ := os.UserHomeDir()
+	if runtime.GOOS == "darwin" {
+		for _, p := range []string{"/Applications/ChatGPT.app", filepath.Join(home, "Applications/ChatGPT.app")} {
+			if _, err := os.Stat(p); err == nil {
+				return p
+			}
+		}
+	}
+	if p, err := exec.LookPath("chatgpt"); err == nil {
+		return p
+	}
+	if runtime.GOOS == "windows" {
+		for _, base := range []string{os.Getenv("LOCALAPPDATA"), os.Getenv("ProgramFiles")} {
+			for _, tail := range []string{"ChatGPT/ChatGPT.exe", "Programs/ChatGPT/ChatGPT.exe", "Microsoft/WindowsApps/ChatGPT.exe"} {
+				p := filepath.Join(base, filepath.FromSlash(tail))
+				if _, err := os.Stat(p); base != "" && err == nil {
+					return p
+				}
+			}
+		}
+	}
+	return ""
+}
+func (i *ChatGPTAdapter) Settings(id string) (ClientSettings, error) {
+	u, err := i.SetupURL(id)
+	return ClientSettings{Title: "ChatGPT plugin", URL: u, Direct: true, Instructions: "Open ChatGPT Desktop → Plugins → MCP Connect"}, err
+}
+
+// OpenAI currently shares a local store and executable between its two clients.
+// Only the Codex adapter understands that store's format and CLI launcher.
+// ChatGPT owns the plugin protocol, manifests, receipts and installation outputs.
+type openAIPluginStore interface {
+	pluginHome() string
+	pluginState(market, selector, root string) (bool, error)
+	pluginOutput(context.Context, string, ...string) ([]byte, error)
+	Detect() string
+}
+
+type pluginRegistration struct {
+	Command string   `json:"command"`
+	Args    []string `json:"args"`
+	Enabled *bool    `json:"enabled,omitempty"`
+}
+
+func (i *ChatGPTAdapter) checkManagedPath(id string) error {
+	paths := []string{filepath.Join(i.pluginHome(), "mcp-connect"), filepath.Join(i.pluginHome(), "mcp-connect", "marketplaces"), i.pluginRoot(id), filepath.Join(i.pluginRoot(id), "owner.json")}
+	for _, path := range paths {
+		if info, err := os.Lstat(path); err == nil && info.Mode()&os.ModeSymlink != 0 {
+			return errors.New("Refusing symlinked plugin files or directories")
+		} else if err != nil && !os.IsNotExist(err) {
+			return errors.New("Cannot inspect managed plugin path")
+		}
 	}
 	return nil
 }

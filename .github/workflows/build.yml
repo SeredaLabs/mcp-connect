@@ -18,27 +18,27 @@ jobs:
           - runner: macos-15
             os: darwin
             arch: arm64
-            previous-sha256: 349bc20e8c616d8bc12f54655a69283d7a750dd96953097c5bc3100fbf6ee1e6
+            previous-sha256: b0681f2b84b359ff8376e25f2ac94473f267d0171325661bd225d57b4cb4b40a
           - runner: macos-15-intel
             os: darwin
             arch: amd64
-            previous-sha256: 0a79bfa5c75f278ee3c12dea9957bd5c579a4108990e50d8fa3969c376c6b2af
+            previous-sha256: cc236d60bf75f455f4636c55c3e2a950b166b423cfe3d3213bab38ed236123c7
           - runner: ubuntu-24.04
             os: linux
             arch: amd64
-            previous-sha256: a44e4295f26a43ffe70067e43a72668f499f72f8908e268fb488da67d4436af5
+            previous-sha256: acbee5c633da1f088eb7be0255b50fbf74cdabd62433df93721306e3f512dad5
           - runner: ubuntu-24.04-arm
             os: linux
             arch: arm64
-            previous-sha256: 60f4e85dbc3b7989fa90661ac1024679abff8354e4592975aa89c0e4aaaf65fc
+            previous-sha256: acd73b9b97d71327bf95e6562488108b7c5b7ccf3d7eccac68fe5a8b7135ca23
           - runner: windows-2025
             os: windows
             arch: amd64
-            previous-sha256: 72c5f78254616c64b266744a8ee185f39f86b984537f66b25cfd91bf2a9daf3d
+            previous-sha256: 117ed7441271b64113bdeba81f8eabe8fd4608cc1aa40ab04047f501f625287d
           - runner: windows-11-arm
             os: windows
             arch: arm64
-            previous-sha256: b2df2dccab67791f57259986e9b83ec657d8811befe993df42dceb123b221993
+            previous-sha256: c7bcc08ef8b31cffa42da521db959cf54700902696735c9f272745db4bfe2a94
     timeout-minutes: 30
     runs-on: ${{ matrix.runner }}
     steps:
@@ -110,15 +110,15 @@ jobs:
           fi
           previous="$RUNNER_TEMP/$filename"
           curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
-            "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.11/$filename" --output "$previous"
+            "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.12/$filename" --output "$previous"
           if [ '${{ matrix.os }}' = darwin ]; then
             echo '${{ matrix.previous-sha256 }}'"  $previous" | shasum -a 256 -c -
             sudo installer -pkg "$previous" -target /
-            test "$(/Applications/'MCP Connect.app'/Contents/MacOS/mcp-connect version)" = '0.4.11'
+            test "$(/Applications/'MCP Connect.app'/Contents/MacOS/mcp-connect version)" = '0.4.12'
           else
             echo '${{ matrix.previous-sha256 }}'"  $previous" | sha256sum -c -
             sudo apt-get install -y "$previous"
-            test "$(mcp-connect version)" = '0.4.11'
+            test "$(mcp-connect version)" = '0.4.12'
           fi
       - name: Prepare existing installation for upgrade (Windows)
         if: matrix.os == 'windows'
@@ -126,12 +126,12 @@ jobs:
         run: |
           $filename = 'mcp-connect-windows-${{ matrix.arch }}-setup.exe'
           $previous = Join-Path $env:RUNNER_TEMP $filename
-          Invoke-WebRequest "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.11/$filename" -OutFile $previous
+          Invoke-WebRequest "https://github.com/SeredaLabs/mcp-connect/releases/download/v0.4.12/$filename" -OutFile $previous
           if ((Get-FileHash $previous -Algorithm SHA256).Hash.ToLowerInvariant() -ne '${{ matrix.previous-sha256 }}') { throw 'Previous installer hash mismatch' }
           $process = Start-Process $previous -ArgumentList '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-' -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw 'Previous installation failed' }
           $binary = Join-Path $env:LOCALAPPDATA 'Programs\MCP Connect\mcp-connect.exe'
-          if ((& $binary version) -ne '0.4.11') { throw 'Previous installed version mismatch' }
+          if ((& $binary version) -ne '0.4.12') { throw 'Previous installed version mismatch' }
       - name: Check installed macOS package
         if: matrix.os == 'darwin'
         shell: bash

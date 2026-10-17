@@ -44,7 +44,7 @@ if [ "$platform" = darwin ]; then
 <key>CFBundleName</key><string>MCP Connect</string>
 <key>CFBundleDisplayName</key><string>MCP Connect</string>
 <key>CFBundleIdentifier</key><string>eu.onecmcp.connect</string>
-<key>CFBundleVersion</key><string>30</string>
+<key>CFBundleVersion</key><string>31</string>
 <key>CFBundleShortVersionString</key><string>$version</string>
 <key>CFBundleExecutable</key><string>mcp-connect</string>
 <key>CFBundleIconFile</key><string>icon.icns</string>

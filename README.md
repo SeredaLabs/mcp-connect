@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.12%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.13%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -15,7 +15,7 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 **Use the app:** [⬇ Download](https://seredalabs.github.io/mcp-connect/) · [Setup](#get-connected) · [Authentication](docs/AUTHENTICATION.md) · [Updates](docs/UPDATES.md)
 
-**Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md)
+**Project:** [Security](SECURITY.md) · [Build from source](docs/BUILD.md) · [Client integration architecture](docs/INTEGRATIONS.md)
 
 <a id="see-it-in-action"></a>
 

@@ -727,21 +727,18 @@ func newWindow(a fyne.App, store *core.Store, integrator *core.Integrator) fyne.
 		if busy {
 			return
 		}
-		if key == "chatgpt" {
-			openPlugin.OnTapped()
+		settings, err := integrator.Settings(key, selected)
+		if err != nil {
+			dialog.ShowInformation(core.ClientName(key), err.Error(), w)
 			return
 		}
-		if key == "codex" {
-			if err := a.OpenURL(&url.URL{Scheme: "codex", Host: "settings"}); err != nil {
-				dialog.ShowInformation("Codex settings", "Open Settings in the OpenAI desktop app. If you use only Codex CLI, its settings are in: "+integrator.CodexPath, w)
+		if settings.Direct {
+			if err := a.OpenURL(settings.URL); err != nil {
+				dialog.ShowInformation(settings.Title, settings.Instructions, w)
 			}
 			return
 		}
-		path := integrator.ClaudePath
-		if key == "claude-desktop" {
-			path = integrator.ClaudeDesktopPath
-		}
-		showClaudeSettings(a, w, key, path)
+		showClientSettings(a, w, settings)
 	}
 	clientRow := func(check *hintCheck, key string) fyne.CanvasObject {
 		clientLabels[key].label.Truncation = fyne.TextTruncateEllipsis
