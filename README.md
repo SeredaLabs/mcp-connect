@@ -5,7 +5,7 @@
 </h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
-[![Preview](https://img.shields.io/badge/release-0.4.13%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
+[![Preview](https://img.shields.io/badge/release-0.4.14%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20Windows%20%7C%20Linux-blue)](#platforms)
 [![License](https://img.shields.io/badge/license-MIT-purple)](LICENSE)
 
@@ -19,7 +19,7 @@ MCP Connect is a compact desktop utility for connecting AI clients to HTTPS MCP 
 
 ## 🆕 Current release
 
-[**0.4.13 Preview**](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.13) separates the four client integrations into independent adapters. Profile formats, registration IDs, Save & Apply and per-client Retry remain compatible. Existing connections do not need to be recreated. See [updates](docs/UPDATES.md) for installation and [integration architecture](docs/INTEGRATIONS.md) for the developer contract.
+[**0.4.14 Preview**](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.14) hardens adapter isolation with ID-based registration, an independent shared OpenAI backend, clearer setup errors and contract tests in CI. Profile formats, registration IDs, Save & Apply and per-client Retry remain compatible. Existing connections do not need to be recreated. See [updates](docs/UPDATES.md) for installation and [integration architecture](docs/INTEGRATIONS.md) for the developer contract.
 
 <a id="see-it-in-action"></a>
 
@@ -160,9 +160,9 @@ Use a separate server account with minimum permissions. MCP Connect does not cha
 
 This preview is intended for developers and early testers. The macOS application is ad-hoc signed; PKG installers are unsigned and not notarized. Windows applications and installers have no publisher signature. OS publisher warnings may appear.
 
-For 0.4.13, [native CI passed on all six targets](https://github.com/SeredaLabs/mcp-connect/actions/runs/39031665077): package builds, dependency checks, installed upgrades from 0.4.12, installed CLI version checks and Windows/Linux removal checks. Local tests also covered the GUI, client adapters, installed client CLIs and macOS Keychain, including the race detector.
+Native CI runs unit/contract tests, dependency checks, package builds, installed upgrades from 0.4.13 and Windows/Linux removal checks. Linux AMD64 also runs the race detector. Release notes link the validated run and package checksums.
 
-These checks do not certify manual graphical operation on every platform or compatibility with every AI-client version. Graphical startup checks from earlier releases are historical evidence, not a fresh GUI validation of 0.4.13. Windows ARM64 graphical support remains experimental; physical Intel Mac and macOS 13 GUI behavior still need confirmation.
+Native window checks use empty disposable profiles. Linux uses Xvfb/software OpenGL; hosted macOS/Windows environments may be unavailable or unconfirmed, which is recorded separately from a passing GUI check. These checks do not certify manual graphical operation on every platform or compatibility with every AI-client version. Windows ARM64 graphical support remains experimental; physical Intel Mac and macOS 13 GUI behavior still need confirmation.
 
 <a id="license-and-author"></a>
 

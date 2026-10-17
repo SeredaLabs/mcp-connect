@@ -43,7 +43,7 @@ Windows packaging generates embedded icon resources with pinned `go-winres v0.3.
 
 After `bash scripts/build.sh`, run `bash scripts/package-installer.sh` on the target OS. macOS uses built-in `pkgbuild` and `productbuild`; Linux uses `dpkg-deb`; Windows uses Inno Setup 7.1.0 (`ISCC` points to `ISCC.exe`, or `iscc` must be on PATH). The Windows compiler is a build-only tool. CI downloads the official release and checks a pinned SHA-256 digest.
 
-CI installs 0.4.12, upgrades it to the current build on all six targets, checks the installed CLI, and verifies removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.
+CI installs 0.4.13, upgrades it to the current build on all six targets, checks the installed CLI, and verifies removal and shortcut cleanup on Windows/Linux. These checks do not certify GUI startup or publisher trust. Installers preserve profiles and vault secrets and never register MCP clients during installation.
 
 ## Validation and integration changes
 
@@ -63,3 +63,9 @@ Tests under `internal/core` and `internal/gui` are versioned. Native CI runs `go
 Installed-client tests require `ONECMCP_TEST_CLIENT_CLIS=1` and use temporary client homes/configurations. Native-vault tests require `ONECMCP_TEST_NATIVE_VAULT=1` and create/remove synthetic credential records. Both are explicit local opt-ins; client CLIs and an available OS vault are required respectively.
 
 Before changing a client integration, read [the adapter contract and boundaries](INTEGRATIONS.md). Vendor commands, formats, paths and fixtures belong to the affected adapter. The coordinator, GUI and profile format should remain unaffected when the common contract still applies.
+
+## Native GUI startup diagnostics
+
+CI launches the packaged binary with disposable empty configuration and update checks disabled. Linux uses Xvfb/software OpenGL and requires an observable window. macOS uses a native CoreGraphics window probe; Windows uses native window enumeration. A visible window that remains alive passes startup only. A hosted graphics limitation or unconfirmed Windows window is recorded as unavailable/unconfirmed, with a warning and a separate `gui-check-*` report; it is never counted as a GUI pass. Unexpected exits fail the check. The reports include startup logs and do not contain real profiles or credentials.
+
+These probes do not replace interaction testing on physical hardware. Mesa/Xvfb are CI dependencies, not bundled application requirements or shipped software.

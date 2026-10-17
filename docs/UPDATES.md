@@ -4,9 +4,9 @@
 
 [← Overview](../README.md) · [Security](../SECURITY.md)
 
-## Updating to 0.4.13
+## Updating to 0.4.14
 
-[0.4.13 Preview](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.13) preserves existing profiles, credentials and registration IDs. The adapter refactor needs no manual data migration or recreation of connections. The 0.4.12 updater was verified to detect the published 0.4.13 release. If the executable stays at the same installed path, no registration repair is needed; after a path change, use **Save & Apply**.
+[0.4.14 Preview](https://github.com/SeredaLabs/mcp-connect/releases/tag/v0.4.14) preserves existing profiles, credentials and registration IDs. The adapter refactor needs no manual data migration or recreation of connections. Versions 0.4.11 and newer can detect published Preview releases through the built-in updater. If the executable stays at the same installed path, no registration repair is needed; after a path change, use **Save & Apply**.
 
 ## 🖥️ In the app
 

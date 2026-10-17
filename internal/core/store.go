@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-const Version = "0.4.13"
+const Version = "0.4.14"
 const Service = "eu.onecmcp.connect"
 
 type Credentials struct {
