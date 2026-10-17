@@ -50,7 +50,7 @@ func (i *ClaudeDesktopAdapter) setDesktop(id string, on bool, executable string)
 	if path == "" {
 		return errors.New("Claude Desktop configuration path is unavailable")
 	}
-	original, e := os.ReadFile(path)
+	original, e := i.readFile(path)
 	missing := os.IsNotExist(e)
 	if e != nil && !missing {
 		return errors.New("Cannot read Claude Desktop configuration")
@@ -89,7 +89,7 @@ func (i *ClaudeDesktopAdapter) setDesktop(id string, on bool, executable string)
 		return e
 	}
 	updated = append(updated, '\n')
-	current, e := os.ReadFile(path)
+	current, e := i.readFile(path)
 	if missing {
 		if e == nil || !os.IsNotExist(e) {
 			return errors.New("Claude Desktop configuration changed; retry")
@@ -97,7 +97,7 @@ func (i *ClaudeDesktopAdapter) setDesktop(id string, on bool, executable string)
 	} else if e != nil || !bytes.Equal(current, original) {
 		return errors.New("Claude Desktop configuration changed; retry")
 	}
-	if e = AtomicWrite(path, updated); e != nil {
+	if e = i.writeFile(path, updated); e != nil {
 		return errors.New("Cannot save Claude Desktop configuration")
 	}
 	r, exists, e := i.Read(id)
@@ -116,6 +116,8 @@ func (i *ClaudeDesktopAdapter) setDesktop(id string, on bool, executable string)
 type ClaudeDesktopAdapter struct {
 	host       *Integrator
 	configPath string
+	readFile   func(string) ([]byte, error)
+	writeFile  func(string, []byte) error
 }
 
 func NewClaudeDesktopAdapter(host *Integrator, path string) *ClaudeDesktopAdapter {
@@ -124,7 +126,7 @@ func NewClaudeDesktopAdapter(host *Integrator, path string) *ClaudeDesktopAdapte
 			path = filepath.Join(dir, "Claude", "claude_desktop_config.json")
 		}
 	}
-	return &ClaudeDesktopAdapter{host, path}
+	return &ClaudeDesktopAdapter{host: host, configPath: path, readFile: os.ReadFile, writeFile: AtomicWrite}
 }
 func (i *ClaudeDesktopAdapter) ID() string     { return "claude-desktop" }
 func (i *ClaudeDesktopAdapter) Detect() string { return findClaudeDesktop() }
@@ -135,7 +137,7 @@ func (i *ClaudeDesktopAdapter) Read(id string) (Registration, bool, error) {
 	if i.configPath == "" {
 		return Registration{}, false, errors.New("Claude Desktop configuration path is unavailable")
 	}
-	b, err := os.ReadFile(i.configPath)
+	b, err := i.readFile(i.configPath)
 	if os.IsNotExist(err) {
 		return Registration{}, false, nil
 	}

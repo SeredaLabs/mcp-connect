@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 )
 
@@ -19,11 +18,7 @@ type CodexAdapter struct {
 
 func NewCodexAdapter(host *Integrator, path string) *CodexAdapter {
 	if path == "" {
-		dir := os.Getenv("CODEX_HOME")
-		if dir == "" {
-			dir = filepath.Join(host.Home, ".codex")
-		}
-		path = filepath.Join(dir, "config.toml")
+		path = openAIConfigPath(host.Home)
 	}
 	return &CodexAdapter{host: host, configPath: path}
 }
@@ -49,7 +44,7 @@ func (i *CodexAdapter) Read(id string) (Registration, bool, error) {
 	return Registration(r), ok, nil
 }
 func (i *CodexAdapter) run(ctx context.Context, bin string, args ...string) error {
-	command, argv, err := clientCommand(bin, args, filepath.FromSlash("@openai/codex/bin/codex.js"))
+	command, argv, err := openAICommand(bin, args)
 	if err != nil {
 		return err
 	}
@@ -81,7 +76,7 @@ func (adapter *CodexAdapter) Set(ctx context.Context, request RegistrationReques
 	defer cancel()
 	run := func(args ...string) error {
 		if e := i.run(ctx, bin, args...); e != nil {
-			return errors.New(client + " could not update its MCP configuration")
+			return clientCommandFailure(ctx, client, e)
 		}
 		return nil
 	}
@@ -101,26 +96,7 @@ func (adapter *CodexAdapter) Set(ctx context.Context, request RegistrationReques
 	}
 	return verifyRegistration(i, request)
 }
-func (i *CodexAdapter) Detect() string {
-	home, _ := os.UserHomeDir()
-	var paths []string
-	if runtime.GOOS == "darwin" {
-		paths = []string{"/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex", "/Applications/Codex.app/Contents/Resources/codex", filepath.Join(home, "Applications/Codex.app/Contents/Resources/codex"), filepath.Join(home, "Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex")}
-	}
-	if runtime.GOOS == "windows" {
-		for _, root := range []string{os.Getenv("LOCALAPPDATA"), os.Getenv("ProgramFiles")} {
-			if root == "" {
-				continue
-			}
-			for _, app := range []string{"Programs/ChatGPT/resources", "ChatGPT/resources", "Programs/Codex/resources", "Codex/resources"} {
-				for _, exe := range []string{"codex.exe", "codex-cli/bin/codex.exe"} {
-					paths = append(paths, filepath.Join(root, filepath.FromSlash(app), filepath.FromSlash(exe)))
-				}
-			}
-		}
-	}
-	return findCLI("codex", paths)
-}
+func (i *CodexAdapter) Detect() string { return findOpenAICLI() }
 func (i *CodexAdapter) ReadShared(id string) (Registration, bool, error) {
 	if i.shared == nil {
 		return Registration{}, false, nil
@@ -129,43 +105,6 @@ func (i *CodexAdapter) ReadShared(id string) (Registration, bool, error) {
 }
 func (i *CodexAdapter) Settings(id string) (ClientSettings, error) {
 	return ClientSettings{Title: "Codex settings", URL: &url.URL{Scheme: "codex", Host: "settings"}, Instructions: "Open Settings in the OpenAI desktop app. If you use only Codex CLI, its settings are in: " + i.configPath, Direct: true}, nil
-}
-func (i *CodexAdapter) pluginState(market, selector, root string) (bool, error) {
-	b, e := os.ReadFile(i.configPath)
-	if os.IsNotExist(e) || i.configPath == "" {
-		return false, nil
-	}
-	if e != nil {
-		return false, errors.New("Cannot read OpenAI configuration")
-	}
-	var doc struct {
-		Marketplaces map[string]struct {
-			Source     string `toml:"source"`
-			SourceType string `toml:"source_type"`
-		} `toml:"marketplaces"`
-		Plugins map[string]struct {
-			Enabled bool `toml:"enabled"`
-		} `toml:"plugins"`
-	}
-	if toml.Unmarshal(b, &doc) != nil {
-		return false, errors.New("OpenAI configuration is invalid; nothing changed")
-	}
-	if m, ok := doc.Marketplaces[market]; ok && (m.SourceType != "local" || !samePath(m.Source, root)) {
-		return false, errors.New("Name conflict — external OpenAI marketplace")
-	}
-	return doc.Plugins[selector].Enabled, nil
-}
-
-func (i *CodexAdapter) pluginHome() string { return filepath.Dir(i.configPath) }
-func (i *CodexAdapter) pluginOutput(ctx context.Context, bin string, args ...string) ([]byte, error) {
-	command, argv, err := clientCommand(bin, args, filepath.FromSlash("@openai/codex/bin/codex.js"))
-	if err != nil {
-		return nil, err
-	}
-	if i.host.Output == nil {
-		return nil, errors.New("Plugin installer unavailable")
-	}
-	return i.host.Output(ctx, command, argv...)
 }
 
 type codexRegistration struct {

@@ -30,11 +30,12 @@ The [contract source](../internal/core/client_adapter.go) defines normalized reg
   ownership/verification checks. `Registration` is normalized application data;
   vendor serialization tags belong to private structures in each adapter.
 - `client_defaults.go`: explicit composition, display names and bindings to the
-  existing profile flags. This is where another client is registered.
+  existing profile flags. Bindings resolve by stable adapter ID; definition order
+  controls reporting only. Missing, unknown or duplicate composition is rejected.
 - `integration.go`, `client_state.go`: lookup, independent application and retry,
   status reporting, and persistence of profile disabling before cleanup.
 - `adapter_codex.go`: Codex discovery, npm launcher entrypoint, commands, TOML
-  inspection and the OpenAI configuration store shared by desktop plugins.
+  inspection of direct MCP entries.
 - `adapter_claude.go`: Claude Code discovery, npm launcher entrypoint, user-scope
   commands, JSON inspection and best-effort restoration after failed replacement.
 - `adapter_claude_desktop.go`: desktop discovery and paths, JSON inspection,
@@ -42,6 +43,9 @@ The [contract source](../internal/core/client_adapter.go) defines normalized reg
 - `adapter_chatgpt.go`: desktop discovery, plugin manifests, marketplace naming,
   ownership receipts, managed-path validation, install/remove commands and result
   parsing. It never parses Codex configuration.
+- `openai_store.go`: the physical OpenAI store, plugin activation/marketplace
+  inspection, shared CLI discovery and npm launcher. It implements no registration
+  workflow and depends on neither client adapter.
 - `client_command.go`, `client_environment.go`, `client_paths.go`: vendor-neutral
   executable invocation, environment and filesystem helpers. Adapters supply their
   own npm entrypoint; Windows launchers are never passed to a shell.
@@ -61,19 +65,20 @@ resolves only the requested IDs.
 
 ## Shared OpenAI store
 
-Codex and ChatGPT currently share a configuration store and executable. Explicit
-composition supplies the ChatGPT adapter with private backend operations owned
-by the Codex adapter: storage location, plugin activation/marketplace ownership
-inspection, executable discovery and invocation. Plugin commands and output formats
-remain in ChatGPT. Codex receives only ChatGPT's normalized registration reader for
-shared-state reporting. Neither dependency goes through the coordinator.
+Codex and ChatGPT currently share a physical configuration file and CLI launcher.
+`openai_store.go` owns shared path discovery, plugin activation and marketplace
+inspection, executable discovery and invocation. ChatGPT constructs this small
+backend directly and does not depend on `CodexAdapter`. Codex owns its MCP entry
+codec and registration commands, using only common path/launcher helpers. Codex
+receives ChatGPT's normalized registration reader for shared-state reporting.
 
-This small internal composition seam is deliberately separate from the shared
-client contract. A Codex storage-format migration changes the Codex adapter and
-its fixtures. A ChatGPT manifest or installation-command change changes the
-ChatGPT adapter and its fixtures. If a vendor stops sharing a backend, update the
-affected adapter and explicit composition rather than teaching the coordinator
-another mechanism.
+Changing plugin-only fields affects the backend and its fixtures, without changing
+the Codex adapter. A ChatGPT manifest or install-command change affects ChatGPT
+and its fixtures. A direct Codex MCP-entry format change affects Codex and its
+fixtures. A migration of the entire physical store necessarily affects the shared
+backend and any codecs reading that file; this shared dependency is explicit and
+does not reach the coordinator, GUI or profile storage. There is no generic
+configuration engine or dynamic adapter loader.
 
 ## Compatibility and safety
 
@@ -82,7 +87,10 @@ Detection means the app/executable was located, not that its version was certifi
 CLI invocation must not imply that an unknown upstream version is verified.
 Adapters validate known configuration/result shapes and fail per client on invalid
 configuration, unsupported commands, changed installation output or failed state
-verification. There is no version matrix or compatibility framework.
+verification. Setup diagnostics distinguish cancellation, timeouts, missing
+executables and permission failures. Other command failures advise checking client
+configuration/version and updating MCP Connect or the client; arbitrary stderr is
+not displayed. There is no version matrix or compatibility framework.
 
 Ownership remains an absolute application command with exactly `serve <profile-ID>`
 arguments. External entries are never replaced or removed. Desktop JSON retains
@@ -96,7 +104,8 @@ transport, authentication, vault and remote-session formats are unaffected.
 | --- | --- |
 | Claude Code registration syntax | Claude Code adapter and its fixtures/tests |
 | ChatGPT plugin manifest/install command | ChatGPT adapter and its fixtures/tests |
-| Codex configuration format | Codex adapter/backend and its fixtures/tests |
+| Direct Codex MCP-entry format | Codex adapter and its fixtures/tests |
+| Shared OpenAI store/plugin fields | Shared backend and its fixtures/tests; whole-file migrations can also affect entry codecs |
 | Additional client | New adapter/tests, explicit composition and UI/profile selection exposure |
 
 Isolation applies while the common integration contract remains applicable.
@@ -105,10 +114,16 @@ Existing adapters and the coordinator need no new registration dispatch branch
 for an additional client. Adding persisted selection for a future client still
 requires an explicit storage/UI decision; this refactor does not redesign profiles.
 
-## Local validation
+## Tests and validation
 
-This repository keeps `*_test.go` files local and ignored (see [`.gitignore`](../.gitignore) and the local development instructions in `.local/README.md`). A public clone does not contain this test suite, and native CI runs package/static checks rather than these local tests. Do not force-add them. The adapter-specific test files own
-configuration/CLI fixtures; the shared contract suite uses only normalized
+The repository includes the adapter-specific fixtures and shared behavioral
+contract suite. Native CI runs unit/contract/GUI tests on all six targets and the
+race detector on Linux AMD64. `.local/` remains private scratch material.
+
+The composition tests reorder definitions and adapters and verify each profile
+flag still selects the right ID. All four adapters exercise mutation and
+verification failures; Desktop additionally checks concurrent edits, preservation
+after a failed write and removal verification. Shared tests use only normalized
 operations. ChatGPT's contract fixture substitutes backend operations, so it does
 not depend on Codex's TOML representation. Existing end-to-end regression tests
 also exercise the real shared store.

@@ -29,7 +29,6 @@ claude_desktop_config.json
 auth.json
 __pycache__/
 *.pyc
-*_test.go
 /tests/
 /audit/
 

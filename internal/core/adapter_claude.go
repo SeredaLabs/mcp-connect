@@ -81,7 +81,7 @@ func (adapter *ClaudeAdapter) Set(ctx context.Context, request RegistrationReque
 	defer cancel()
 	run := func(args ...string) error {
 		if e := i.run(ctx, bin, args...); e != nil {
-			return errors.New(client + " could not update its MCP configuration")
+			return clientCommandFailure(ctx, client, e)
 		}
 		return nil
 	}

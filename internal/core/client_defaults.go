@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 // Explicit composition is the only place that binds adapters to stored profile
 // flags and UI names. Adding a client does not change the coordinator.
 const chatGPTClientID = "chatgpt"
@@ -42,15 +44,10 @@ func (c Connection) WantsClient(id string) bool {
 
 func defaultClients(i *Integrator) *ClientRegistry {
 	codex := NewCodexAdapter(i, "")
-	chatgpt := NewChatGPTAdapter(i, codex)
+	chatgpt := NewChatGPTAdapter(i, "")
 	codex.shared = chatgpt.Read
 	adapters := []ClientAdapter{codex, chatgpt, NewClaudeAdapter(i, ""), NewClaudeDesktopAdapter(i, "")}
-	var bindings []ClientBinding
-	for n, a := range adapters {
-		d := clientDefinitions[n]
-		bindings = append(bindings, ClientBinding{Adapter: a, Name: d.name, Selected: d.selected})
-	}
-	registry, err := NewClientRegistry(bindings...)
+	registry, err := bindClientAdapters(clientDefinitions, adapters)
 	if err != nil {
 		panic(err)
 	} // static programmer error
@@ -65,4 +62,40 @@ func FindClient(id string) string {
 		return ""
 	}
 	return a.Adapter.Detect()
+}
+
+// Definitions determine reporting order. IDs, never parallel slice positions,
+// bind display names and persisted selections to concrete adapters.
+func bindClientAdapters(definitions []clientDefinition, adapters []ClientAdapter) (*ClientRegistry, error) {
+	byID := make(map[string]ClientAdapter, len(adapters))
+	for _, a := range adapters {
+		if a == nil || a.ID() == "" {
+			return nil, fmt.Errorf("Invalid client adapter")
+		}
+		if _, exists := byID[a.ID()]; exists {
+			return nil, fmt.Errorf("Duplicate client adapter: %s", a.ID())
+		}
+		byID[a.ID()] = a
+	}
+	seen := make(map[string]bool, len(definitions))
+	var bindings []ClientBinding
+	for _, d := range definitions {
+		if d.id == "" || d.name == "" || d.selected == nil {
+			return nil, fmt.Errorf("Invalid client definition")
+		}
+		if seen[d.id] {
+			return nil, fmt.Errorf("Duplicate client definition: %s", d.id)
+		}
+		seen[d.id] = true
+		a, ok := byID[d.id]
+		if !ok {
+			return nil, fmt.Errorf("Missing client adapter: %s", d.id)
+		}
+		bindings = append(bindings, ClientBinding{Adapter: a, Name: d.name, Selected: d.selected})
+		delete(byID, d.id)
+	}
+	if len(byID) != 0 {
+		return nil, fmt.Errorf("Client adapter has no definition")
+	}
+	return NewClientRegistry(bindings...)
 }

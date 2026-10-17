@@ -81,6 +81,13 @@ jobs:
         run: |
           go mod verify
           go vet ./...
+      - name: Unit and adapter contract tests
+        shell: bash
+        run: go test ./... -count=1
+      - name: Race detector
+        if: matrix.os == 'linux' && matrix.arch == 'amd64'
+        shell: bash
+        run: go test -race ./... -count=1
       - name: Known dependency vulnerabilities
         shell: bash
         env:

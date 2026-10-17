@@ -49,7 +49,7 @@ CI installs 0.4.12, upgrades it to the current build on all six targets, checks 
 
 The [0.4.13 native run](https://github.com/SeredaLabs/mcp-connect/actions/runs/39031665077) passed on all six targets. These are package, upgrade and installed CLI checks, not manual GUI certification.
 
-With the local development tests available, run:
+After cloning the repository, run:
 
 ```sh
 go test ./...
@@ -58,7 +58,7 @@ go vet ./...
 go mod verify
 ```
 
-The public repository ignores `*_test.go` and `.local/` in [`.gitignore`](../.gitignore). A fresh public clone therefore does not include the local test suite, and the published build workflow does not run it. Do not interpret `go test` with no test files as execution of the adapter contract tests.
+Tests under `internal/core` and `internal/gui` are versioned. Native CI runs `go test ./... -count=1` on all six targets and the race detector on Linux AMD64. `.local/`, scratch validation and generated packages remain ignored. The 0.4.13 release predates this CI test step; its historical run above covered package/static checks.
 
 Installed-client tests require `ONECMCP_TEST_CLIENT_CLIS=1` and use temporary client homes/configurations. Native-vault tests require `ONECMCP_TEST_NATIVE_VAULT=1` and create/remove synthetic credential records. Both are explicit local opt-ins; client CLIs and an available OS vault are required respectively.
 

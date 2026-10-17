@@ -149,7 +149,7 @@ func (adapter *ChatGPTAdapter) Set(ctx context.Context, request RegistrationRequ
 	command := func(args ...string) ([]byte, error) {
 		b, err := i.backend.pluginOutput(ctx, bin, args...)
 		if err != nil {
-			return nil, errors.New("OpenAI could not update the local plugin; update ChatGPT/Codex and retry")
+			return nil, clientCommandFailure(ctx, i.ID(), err)
 		}
 		return b, nil
 	}
@@ -236,8 +236,8 @@ type ChatGPTAdapter struct {
 	backend openAIPluginStore
 }
 
-func NewChatGPTAdapter(host *Integrator, backend openAIPluginStore) *ChatGPTAdapter {
-	return &ChatGPTAdapter{host, backend}
+func NewChatGPTAdapter(host *Integrator, path string) *ChatGPTAdapter {
+	return &ChatGPTAdapter{host: host, backend: newOpenAIStore(host, path)}
 }
 func (i *ChatGPTAdapter) ID() string { return "chatgpt" }
 func (i *ChatGPTAdapter) Detect() string {
@@ -270,7 +270,7 @@ func (i *ChatGPTAdapter) Settings(id string) (ClientSettings, error) {
 }
 
 // OpenAI currently shares a local store and executable between its two clients.
-// Only the Codex adapter understands that store's format and CLI launcher.
+// Only the shared OpenAI backend understands that store's format and CLI launcher.
 // ChatGPT owns the plugin protocol, manifests, receipts and installation outputs.
 type openAIPluginStore interface {
 	pluginHome() string

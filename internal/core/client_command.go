@@ -1,7 +1,6 @@
 package core
 
 import (
-	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,7 +16,7 @@ func clientCommand(bin string, args []string, relative string) (string, []string
 		return bin, args, nil
 	}
 	if relative == "" {
-		return "", nil, errors.New("Unsupported client launcher; use the native client executable")
+		return "", nil, clientLauncherError("Unsupported client launcher; use the native client executable")
 	}
 	entry := ""
 	roots := []string{filepath.Join(filepath.Dir(bin), "node_modules")}
@@ -32,7 +31,7 @@ func clientCommand(bin string, args []string, relative string) (string, []string
 		}
 	}
 	if entry == "" {
-		return "", nil, errors.New("Cannot locate the installed npm client entrypoint; reinstall the client or use its native executable")
+		return "", nil, clientLauncherError("Cannot locate the installed npm client entrypoint; reinstall the client or use its native executable")
 	}
 	node := ""
 	candidates := []string{filepath.Join(filepath.Dir(bin), "node.exe")}
@@ -54,7 +53,7 @@ func clientCommand(bin string, args []string, relative string) (string, []string
 		}
 	}
 	if node == "" {
-		return "", nil, errors.New("The npm-installed client needs its Node executable; repair the client installation or use the native client")
+		return "", nil, clientLauncherError("The npm-installed client needs its Node executable; repair the client installation or use the native client")
 	}
 	return node, append([]string{entry}, args...), nil
 }
