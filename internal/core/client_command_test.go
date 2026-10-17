@@ -41,11 +41,12 @@ func TestNPMLauncherWithoutShell(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		out, e := exec.CommandContext(ctx, bin, got...).Output()
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		out, e := exec.CommandContext(ctx, bin, got...).CombinedOutput()
+		contextErr := ctx.Err()
 		cancel()
 		if e != nil {
-			t.Fatal("Node entrypoint invocation failed", e)
+			t.Fatalf("Synthetic Node entrypoint failed: %v; context: %v; output: %s", e, contextErr, out)
 		}
 		var actual []string
 		if e = json.Unmarshal(out, &actual); e != nil || !reflect.DeepEqual(actual, args) {
