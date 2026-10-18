@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32" role="img" aria-label="English — selected">
+<svg xmlns="http://www.w3.org/2000/svg" width="18" height="32" viewBox="0 0 18 32" role="img" aria-label="English — selected">
   <title>English — selected</title>
-  <rect x="0.5" y="2.5" width="23" height="27" rx="5" fill="#2563eb" stroke="#60a5fa"/>
+  <rect x="0.5" y="2.5" width="17" height="27" rx="5" fill="#2563eb" stroke="#60a5fa"/>
   <defs><clipPath id="flag"><rect width="24" height="16" rx="2"/></clipPath></defs>
-  <g transform="translate(4 11) scale(0.6666667)" clip-path="url(#flag)"><rect width="24" height="16" fill="#012169"/><path d="M0 0 24 16M24 0 0 16" stroke="#fff" stroke-width="4"/><path d="M0 0 24 16M24 0 0 16" stroke="#c8102e" stroke-width="1.5"/><path d="M12 0V16M0 8H24" stroke="#fff" stroke-width="6"/><path d="M12 0V16M0 8H24" stroke="#c8102e" stroke-width="3.5"/></g>
+  <g transform="translate(1 11) scale(0.6666667)" clip-path="url(#flag)"><rect width="24" height="16" fill="#012169"/><path d="M0 0 24 16M24 0 0 16" stroke="#fff" stroke-width="4"/><path d="M0 0 24 16M24 0 0 16" stroke="#c8102e" stroke-width="1.5"/><path d="M12 0V16M0 8H24" stroke="#fff" stroke-width="6"/><path d="M12 0V16M0 8H24" stroke="#c8102e" stroke-width="3.5"/></g>
 </svg>
