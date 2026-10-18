@@ -1,9 +1,8 @@
-# MCP Connect
-
-<p>
-  <a href="https://github.com/SeredaLabs/mcp-connect"><img src="assets/languages/en-active.svg" alt="🇬🇧 English" width="148" height="32"></a>
-  <a href="https://github.com/SeredaLabs/mcp-connect/blob/main/docs/INSTALL.uk.md"><img src="assets/languages/uk-inactive.svg" alt="🇺🇦 Українська" width="148" height="32"></a>
-</p>
+<h1>
+  MCP Connect
+  <a href="https://github.com/SeredaLabs/mcp-connect/blob/main/docs/INSTALL.uk.md" title="🇺🇦 Українська"><picture><source media="(max-width: 1000px)" srcset="assets/languages/uk-inactive-compact.svg"><img align="right" src="assets/languages/uk-inactive.svg" alt="🇺🇦 Українська" height="32"></picture></a>
+  <a href="https://github.com/SeredaLabs/mcp-connect" title="🇬🇧 English"><picture><source media="(max-width: 1000px)" srcset="assets/languages/en-active-compact.svg"><img align="right" src="assets/languages/en-active.svg" alt="🇬🇧 English" height="32"></picture></a>
+</h1>
 
 [![Build](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/SeredaLabs/mcp-connect/actions/workflows/build.yml)
 [![Preview](https://img.shields.io/badge/release-0.4.14%20preview-f59e0b)](https://github.com/SeredaLabs/mcp-connect/releases)
