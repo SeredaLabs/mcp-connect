@@ -1,6 +1,6 @@
 <h1>
-  <a href="https://github.com/SeredaLabs/mcp-connect/blob/main/docs/INSTALL.uk.md" title="🇺🇦 Українська"><picture><source media="(max-width: 1000px)" srcset="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/uk-active-compact.svg"><img align="right" src="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/uk-active.svg" alt="🇺🇦 Українська" height="32"></picture></a>
-  <a href="https://github.com/SeredaLabs/mcp-connect" title="🇬🇧 English"><picture><source media="(max-width: 1000px)" srcset="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/en-inactive-compact.svg"><img align="right" src="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/en-inactive.svg" alt="🇬🇧 English" height="32"></picture></a>
+  <a href="https://github.com/SeredaLabs/mcp-connect/blob/main/docs/INSTALL.uk.md" title="🇺🇦 Українська"><picture><source media="(max-width: 1000px)" srcset="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/uk-active-icon.svg"><img align="right" src="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/uk-active.svg" alt="🇺🇦 Українська" height="32"></picture></a>
+  <a href="https://github.com/SeredaLabs/mcp-connect" title="🇬🇧 English"><picture><source media="(max-width: 1000px)" srcset="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/en-inactive-icon.svg"><img align="right" src="https://raw.githubusercontent.com/SeredaLabs/mcp-connect/main/assets/languages/en-inactive.svg" alt="🇬🇧 English" height="32"></picture></a>
   MCP Connect
 </h1>
 
