@@ -58,7 +58,7 @@ go vet ./...
 go mod verify
 ```
 
-Tests under `internal/core` and `internal/gui` are versioned. Native CI runs `go test ./... -count=1` on all six targets and the race detector on Linux AMD64. `.local/`, scratch validation and generated packages remain ignored. The 0.4.13 release predates this CI test step; its historical run above covered package/static checks.
+Tests under `internal/core`, `internal/gui` and `internal/updater` are versioned. Native CI runs `go test ./... -count=1` on all six targets and the race detector on Linux AMD64. `.local/`, scratch validation and generated packages remain ignored. The 0.4.13 release predates this CI test step; its historical run above covered package/static checks.
 
 CI also runs `go mod tidy -diff` and Staticcheck v0.8.2 with its default checks except ST1005. Application errors are intentionally sentence-cased because the GUI/CLI displays them directly. Correctness, deprecated API and unused-code checks remain enabled. For a reachability audit, run `go run golang.org/x/tools/cmd/deadcode@v0.51.0 ./...` and repeat with `-test`; confirm findings against platform files, callbacks and adapter interfaces before removing code.
 
