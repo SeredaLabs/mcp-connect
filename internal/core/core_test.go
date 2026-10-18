@@ -193,7 +193,7 @@ func TestRedirectNoCredentialLeak(t *testing.T) {
 	var got atomic.Int32
 	dest := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { got.Add(1) }))
 	defer dest.Close()
-	src := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, dest.URL, 302) }))
+	src := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, dest.URL, http.StatusFound) }))
 	defer src.Close()
 	if _, e := probe(context.Background(), src.URL, Credentials{Login: "user", Password: "sentinel-secret"}); e == nil {
 		t.Fatal("redirect should fail")
@@ -331,7 +331,7 @@ func TestSSEReconnect(t *testing.T) {
 	defer h.Close()
 	client, _ := newHTTP(h.URL, Credentials{Login: "user", Password: "secret"})
 	c := &recordingConn{}
-	if e := listenSSE(context.Background(), client, h.URL, "", c); e != nil {
+	if e := listenSSECurrent(context.Background(), client, h.URL, func() string { return "" }, c); e != nil {
 		t.Fatal(e)
 	}
 	if gets.Load() != 2 || len(c.messages) != 1 {

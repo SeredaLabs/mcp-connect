@@ -40,7 +40,7 @@ func showClientSettings(a fyne.App, w fyne.Window, settings core.ClientSettings)
 	title := settings.Title
 	instructions := widget.NewLabel(settings.Instructions)
 	instructions.Wrapping = fyne.TextWrapWord
-	primary := widget.NewButtonWithIcon(settings.ActionLabel, theme.ContentCopyIcon(), func() { w.Clipboard().SetContent(settings.CopyText) })
+	primary := widget.NewButtonWithIcon(settings.ActionLabel, theme.ContentCopyIcon(), func() { a.Clipboard().SetContent(settings.CopyText) })
 	var openDesktop func()
 	if settings.URL != nil {
 		openDesktop = func() {

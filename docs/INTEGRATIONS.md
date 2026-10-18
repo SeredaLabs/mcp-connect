@@ -54,9 +54,10 @@ The [contract source](../internal/core/client_adapter.go) defines normalized reg
 `Set` receives only the profile ID/name, application executable and desired enabled
 state. A successful mutation must inspect its resulting registration. `Settings`
 returns guidance and actions for the GUI to render; the GUI owns no registration
-paths or CLI instructions. `Integrator.ChatGPTSetupURL` remains a thin compatibility
-facade. A small optional `ReadShared` operation preserves the existing shared-state
-semantics without naming a vendor in the coordinator.
+paths or CLI instructions. All clients use `Integrator.Settings`; no vendor-specific
+setup facade is needed in the coordinator. A small optional `ReadShared` operation
+preserves the existing shared-state semantics without naming a vendor in the
+coordinator.
 
 The registry preserves insertion order, rejects duplicate/unknown IDs, and binds
 selection to the existing profile fields. Each `Apply` result is independent;

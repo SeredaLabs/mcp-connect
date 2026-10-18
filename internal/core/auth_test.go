@@ -213,7 +213,9 @@ func TestTokenRedirectDoesNotLeak(t *testing.T) {
 	var hits atomic.Int64
 	destination := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { hits.Add(1); w.WriteHeader(204) }))
 	defer destination.Close()
-	redirect := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, destination.URL, 307) }))
+	redirect := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, destination.URL, http.StatusTemporaryRedirect)
+	}))
 	defer redirect.Close()
 	for _, mode := range []string{AuthBearer, AuthAPIKey} {
 		client, _ := newHTTP(redirect.URL, Credentials{AuthType: mode, Token: "sentinel-secret", Endpoint: redirect.URL})

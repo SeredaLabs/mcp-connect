@@ -60,6 +60,8 @@ go mod verify
 
 Tests under `internal/core` and `internal/gui` are versioned. Native CI runs `go test ./... -count=1` on all six targets and the race detector on Linux AMD64. `.local/`, scratch validation and generated packages remain ignored. The 0.4.13 release predates this CI test step; its historical run above covered package/static checks.
 
+CI also runs `go mod tidy -diff` and Staticcheck v0.8.2 with its default checks except ST1005. Application errors are intentionally sentence-cased because the GUI/CLI displays them directly. Correctness, deprecated API and unused-code checks remain enabled. For a reachability audit, run `go run golang.org/x/tools/cmd/deadcode@v0.51.0 ./...` and repeat with `-test`; confirm findings against platform files, callbacks and adapter interfaces before removing code.
+
 Installed-client tests require `ONECMCP_TEST_CLIENT_CLIS=1` and use temporary client homes/configurations. Native-vault tests require `ONECMCP_TEST_NATIVE_VAULT=1` and create/remove synthetic credential records. Both are explicit local opt-ins; client CLIs and an available OS vault are required respectively.
 
 Before changing a client integration, read [the adapter contract and boundaries](INTEGRATIONS.md). Vendor commands, formats, paths and fixtures belong to the affected adapter. The coordinator, GUI and profile format should remain unaffected when the common contract still applies.

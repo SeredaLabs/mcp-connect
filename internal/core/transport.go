@@ -352,9 +352,6 @@ func Bridge(ctx context.Context, endpoint string, cred Credentials, in io.ReadCl
 
 // Standalone SSE is optional. A 405 is the normal response of the 1C backend.
 // Reconnect uses Last-Event-ID and never replays a POST or tool call.
-func listenSSE(ctx context.Context, h *http.Client, endpoint, session string, local mcp.Connection) error {
-	return listenSSECurrent(ctx, h, endpoint, func() string { return session }, local)
-}
 func listenSSECurrent(ctx context.Context, h *http.Client, endpoint string, sessionID func() string, local mcp.Connection) error {
 	last := ""
 	lastSession := ""

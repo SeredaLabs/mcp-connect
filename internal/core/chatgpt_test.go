@@ -105,8 +105,8 @@ func TestChatGPTInstalledCLIIsolated(t *testing.T) {
 	if _, ok, err := i.Read("codex", c.ID); err != nil || !ok {
 		t.Fatal("direct Codex registration missing")
 	}
-	link, err := i.ChatGPTSetupURL(c.ID)
-	if err != nil || link.Query().Get("marketplacePath") != filepath.Join(fixtureChatGPT(i).pluginRoot(c.ID), ".agents", "plugins", "marketplace.json") {
+	settings, err := i.Settings(chatGPTClientID, c.ID)
+	if err != nil || settings.URL == nil || settings.URL.Query().Get("marketplacePath") != filepath.Join(fixtureChatGPT(i).pluginRoot(c.ID), ".agents", "plugins", "marketplace.json") {
 		t.Fatal("setup link", err)
 	}
 	err = filepath.Walk(fixtureChatGPT(i).pluginRoot(c.ID), func(p string, info os.FileInfo, err error) error {

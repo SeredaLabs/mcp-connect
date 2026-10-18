@@ -2,7 +2,7 @@ package core
 
 import "context"
 
-// Local legacy fixtures construct adapters explicitly, keeping test paths out of
+// Integration fixtures construct adapters explicitly, keeping test paths out of
 // the coordinator. Tests can replace execution seams after construction.
 type integrationFixture struct {
 	DisplayName, Home, Executable, ClaudePath, CodexPath, ClaudeDesktopPath string

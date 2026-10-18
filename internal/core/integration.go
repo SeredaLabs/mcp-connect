@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -93,11 +92,6 @@ func (i *Integrator) Settings(client, id string) (ClientSettings, error) {
 	return a.Settings(id)
 }
 
-// Kept for existing callers; the adapter owns the URL and installation details.
-func (i *Integrator) ChatGPTSetupURL(id string) (*url.URL, error) {
-	settings, err := i.Settings(chatGPTClientID, id)
-	return settings.URL, err
-}
 func (i *Integrator) Status(client, id string) string {
 	a, err := i.adapter(client)
 	if err != nil {

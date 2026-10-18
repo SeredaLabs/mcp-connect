@@ -81,6 +81,12 @@ jobs:
         run: |
           go mod verify
           go vet ./...
+      - name: Static analysis and dependency hygiene
+        shell: bash
+        run: |
+          go mod tidy -diff
+          # Errors are shown directly as user-facing GUI/CLI messages.
+          go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -checks=inherit,-ST1005 ./...
       - name: Unit and adapter contract tests
         shell: bash
         run: go test ./... -count=1

@@ -707,22 +707,6 @@ func newWindow(a fyne.App, store *core.Store, integrator *core.Integrator) fyne.
 	disconnect.Importance = widget.LowImportance
 	remove.Importance = widget.LowImportance
 
-	openPlugin := widget.NewButtonWithIcon("Settings", theme.SettingsIcon(), func() {
-		if selected == "" {
-			dialog.ShowInformation("ChatGPT plugin", "Save & Apply with ChatGPT Desktop selected first.", w)
-			return
-		}
-		link, err := integrator.ChatGPTSetupURL(selected)
-		if err != nil {
-			dialog.ShowInformation("ChatGPT plugin", err.Error(), w)
-			return
-		}
-		if err = a.OpenURL(link); err != nil {
-			dialog.ShowError(fmt.Errorf("Cannot open plugin. Open ChatGPT Desktop → Plugins → MCP Connect"), w)
-		}
-	})
-	openPlugin.Importance = widget.LowImportance
-	buttons = append(buttons, openPlugin)
 	openClientSettings := func(key string) {
 		if busy {
 			return
