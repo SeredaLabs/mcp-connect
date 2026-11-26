@@ -55,7 +55,7 @@ jobs:
       - name: Windows C compiler
         id: msys2
         if: matrix.os == 'windows'
-        uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        uses: msys2/setup-msys2@3c51bf698df1e37b2261f53cb67797b97761185c # v2
         with:
           msystem: ${{ matrix.arch == 'arm64' && 'CLANGARM64' || 'UCRT64' }}
           install: ${{ matrix.arch == 'arm64' && 'mingw-w64-clang-aarch64-clang' || 'mingw-w64-ucrt-x86_64-gcc' }}
