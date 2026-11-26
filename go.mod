@@ -3,7 +3,7 @@ module github.com/SeredaLabs/mcp-connect
 go 1.27.2
 
 require (
-	fyne.io/fyne/v2 v2.8.2
+	fyne.io/fyne/v2 v2.8.3
 	github.com/keybase/go-keychain v0.0.1
 	github.com/modelcontextprotocol/go-sdk v1.8.0
 	github.com/pelletier/go-toml/v2 v2.4.3
